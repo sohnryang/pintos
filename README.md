@@ -1,2 +1,2 @@
-# pintos
-PintOS implementation by myself
+# PintOS
+Preliminary tasting of hell
