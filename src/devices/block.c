@@ -7,19 +7,19 @@
 
 /* A block device. */
 struct block
-  {
-    struct list_elem list_elem;         /* Element in all_blocks. */
+{
+  struct list_elem list_elem; /* Element in all_blocks. */
 
-    char name[16];                      /* Block device name. */
-    enum block_type type;                /* Type of block device. */
-    block_sector_t size;                 /* Size in sectors. */
+  char name[16];        /* Block device name. */
+  enum block_type type; /* Type of block device. */
+  block_sector_t size;  /* Size in sectors. */
 
-    const struct block_operations *ops;  /* Driver operations. */
-    void *aux;                          /* Extra data owned by driver. */
+  const struct block_operations *ops; /* Driver operations. */
+  void *aux;                          /* Extra data owned by driver. */
 
-    unsigned long long read_cnt;        /* Number of sectors read. */
-    unsigned long long write_cnt;       /* Number of sectors written. */
-  };
+  unsigned long long read_cnt;  /* Number of sectors read. */
+  unsigned long long write_cnt; /* Number of sectors written. */
+};
 
 /* List of all block devices. */
 static struct list all_blocks = LIST_INITIALIZER (all_blocks);
@@ -34,15 +34,14 @@ static struct block *list_elem_to_block (struct list_elem *);
 const char *
 block_type_name (enum block_type type)
 {
-  static const char *block_type_names[BLOCK_CNT] =
-    {
-      "kernel",
-      "filesys",
-      "scratch",
-      "swap",
-      "raw",
-      "foreign",
-    };
+  static const char *block_type_names[BLOCK_CNT] = {
+    "kernel",
+    "filesys",
+    "scratch",
+    "swap",
+    "raw",
+    "foreign",
+  };
 
   ASSERT (type < BLOCK_CNT);
   return block_type_names[type];
@@ -108,8 +107,9 @@ check_sector (struct block *block, block_sector_t sector)
     {
       /* We do not use ASSERT because we want to panic here
          regardless of whether NDEBUG is defined. */
-      PANIC ("Access past end of device %s (sector=%"PRDSNu", "
-             "size=%"PRDSNu")\n", block_name (block), sector, block->size);
+      PANIC ("Access past end of device %s (sector=%" PRDSNu ", "
+             "size=%" PRDSNu ")\n",
+             block_name (block), sector, block->size);
     }
 }
 
@@ -201,8 +201,8 @@ block_register (const char *name, enum block_type type,
   block->read_cnt = 0;
   block->write_cnt = 0;
 
-  printf ("%s: %'"PRDSNu" sectors (", block->name, block->size);
-  print_human_readable_size ((uint64_t) block->size * BLOCK_SECTOR_SIZE);
+  printf ("%s: %'" PRDSNu " sectors (", block->name, block->size);
+  print_human_readable_size ((uint64_t)block->size * BLOCK_SECTOR_SIZE);
   printf (")");
   if (extra_info != NULL)
     printf (", %s", extra_info);
@@ -210,14 +210,13 @@ block_register (const char *name, enum block_type type,
 
   return block;
 }
-
+
 /* Returns the block device corresponding to LIST_ELEM, or a null
    pointer if LIST_ELEM is the list end of all_blocks. */
 static struct block *
 list_elem_to_block (struct list_elem *list_elem)
 {
   return (list_elem != list_end (&all_blocks)
-          ? list_entry (list_elem, struct block, list_elem)
-          : NULL);
+              ? list_entry (list_elem, struct block, list_elem)
+              : NULL);
 }
-

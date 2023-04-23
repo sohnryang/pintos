@@ -20,20 +20,22 @@ void debug_backtrace_all (void);
 
 #endif
 
-
-
 /* This is outside the header guard so that debug.h may be
    included multiple times with different settings of NDEBUG. */
 #undef ASSERT
 #undef NOT_REACHED
 
 #ifndef NDEBUG
-#define ASSERT(CONDITION)                                       \
-        if (CONDITION) { } else {                               \
-                PANIC ("assertion `%s' failed.", #CONDITION);   \
-        }
+#define ASSERT(CONDITION)                           \
+  if (CONDITION)                                    \
+    {                                               \
+    }                                               \
+  else                                              \
+    {                                               \
+      PANIC ("assertion `%s' failed.", #CONDITION); \
+    }
 #define NOT_REACHED() PANIC ("executed an unreachable statement");
 #else
-#define ASSERT(CONDITION) ((void) 0)
+#define ASSERT(CONDITION) ((void)0)
 #define NOT_REACHED() for (;;)
 #endif /* lib/debug.h */

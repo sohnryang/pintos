@@ -9,7 +9,7 @@
 #include "tests/lib.h"
 #include "tests/main.h"
 
-#define ACTUAL ((void *) 0x10000000)
+#define ACTUAL ((void *)0x10000000)
 
 void
 test_main (void)
@@ -21,4 +21,3 @@ test_main (void)
   CHECK (mmap (handle, ACTUAL) != MAP_FAILED, "mmap \"sample.txt\"");
   memcpy (ACTUAL, sample, sizeof sample);
 }
-

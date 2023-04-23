@@ -22,17 +22,17 @@
 
 /* A circular queue of bytes. */
 struct intq
-  {
-    /* Waiting threads. */
-    struct lock lock;           /* Only one thread may wait at once. */
-    struct thread *not_full;    /* Thread waiting for not-full condition. */
-    struct thread *not_empty;   /* Thread waiting for not-empty condition. */
+{
+  /* Waiting threads. */
+  struct lock lock;         /* Only one thread may wait at once. */
+  struct thread *not_full;  /* Thread waiting for not-full condition. */
+  struct thread *not_empty; /* Thread waiting for not-empty condition. */
 
-    /* Queue. */
-    uint8_t buf[INTQ_BUFSIZE];  /* Buffer. */
-    int head;                   /* New data is written here. */
-    int tail;                   /* Old data is read here. */
-  };
+  /* Queue. */
+  uint8_t buf[INTQ_BUFSIZE]; /* Buffer. */
+  int head;                  /* New data is written here. */
+  int tail;                  /* Old data is read here. */
+};
 
 void intq_init (struct intq *);
 bool intq_empty (const struct intq *);

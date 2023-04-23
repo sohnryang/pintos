@@ -10,7 +10,7 @@
 void
 test_main (void)
 {
-  char *actual = (char *) 0x54321000;
+  char *actual = (char *)0x54321000;
   int handle;
   pid_t child;
 

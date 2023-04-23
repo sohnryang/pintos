@@ -24,7 +24,7 @@ main (int argc, char *argv[])
   if (handle < 0)
     exit (2);
 
-  for (;;) 
+  for (;;)
     {
       int n, i;
 
@@ -33,7 +33,7 @@ main (int argc, char *argv[])
         break;
 
       for (i = 0; i < n; i++)
-        buf[i] = toupper ((unsigned char) buf[i]);
+        buf[i] = toupper ((unsigned char)buf[i]);
 
       seek (handle, tell (handle) - n);
       if (write (handle, buf, n) != n)

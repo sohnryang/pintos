@@ -8,9 +8,9 @@
 #include "tests/main.h"
 
 void
-test_main (void) 
+test_main (void)
 {
-  char *data = (char *) 0x7f000000;
+  char *data = (char *)0x7f000000;
   int handle;
 
   CHECK (create ("empty", 0), "create empty file \"empty\"");
@@ -24,4 +24,3 @@ test_main (void)
      the process to be terminated. */
   fail ("unmapped memory is readable (%d)", *data);
 }
-

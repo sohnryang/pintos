@@ -8,7 +8,7 @@
 void
 test_main (void)
 {
-  char *start = (char *) 0x10000000;
+  char *start = (char *)0x10000000;
   int fd[2];
 
   CHECK ((fd[0] = open ("zeros")) > 1, "open \"zeros\" once");

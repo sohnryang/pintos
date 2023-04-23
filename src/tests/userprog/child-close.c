@@ -14,7 +14,7 @@
 #include "tests/lib.h"
 
 int
-main (int argc UNUSED, char *argv[]) 
+main (int argc UNUSED, char *argv[])
 {
   test_name = "child-close";
 

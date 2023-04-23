@@ -7,7 +7,7 @@
 #include "tests/main.h"
 
 void
-test_main (void) 
+test_main (void)
 {
   /* Put a syscall number at the end of one page
      and its argument at the beginning of another. */
@@ -17,6 +17,8 @@ test_main (void)
   p[1] = 42;
 
   /* Invoke the system call. */
-  asm volatile ("movl %0, %%esp; int $0x30" : : "g" (p));
+  asm volatile ("movl %0, %%esp; int $0x30"
+                :
+                : "g"(p));
   fail ("should have called exit(42)");
 }

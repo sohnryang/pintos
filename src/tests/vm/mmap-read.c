@@ -9,7 +9,7 @@
 void
 test_main (void)
 {
-  char *actual = (char *) 0x10000000;
+  char *actual = (char *)0x10000000;
   int handle;
   mapid_t map;
   size_t i;

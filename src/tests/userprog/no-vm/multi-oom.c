@@ -27,7 +27,11 @@
 static const int EXPECTED_DEPTH_TO_PASS = 30;
 static const int EXPECTED_REPETITIONS = 10;
 
-enum child_termination_mode { RECURSE, CRASH };
+enum child_termination_mode
+{
+  RECURSE,
+  CRASH
+};
 
 /* Spawn a recursive copy of ourselves, passing along instructions
    for the child. */
@@ -69,24 +73,24 @@ consume_some_resources_and_die (int seed)
 
   switch (random_ulong () % 5)
     {
-      case 0:
-        *(volatile int *) NULL = 42;
+    case 0:
+      *(volatile int *)NULL = 42;
 
-      case 1:
-        return *(volatile int *) NULL;
+    case 1:
+      return *(volatile int *)NULL;
 
-      case 2:
-        return *PHYS_BASE;
+    case 2:
+      return *PHYS_BASE;
 
-      case 3:
-        *PHYS_BASE = 42;
+    case 3:
+      *PHYS_BASE = 42;
 
-      case 4:
-        open ((char *)PHYS_BASE);
-        exit (-1);
+    case 4:
+      open ((char *)PHYS_BASE);
+      exit (-1);
 
-      default:
-        NOT_REACHED ();
+    default:
+      NOT_REACHED ();
     }
   return 0;
 }
@@ -113,7 +117,7 @@ main (int argc, char *argv[])
     msg ("begin");
 
   /* If -k is passed, crash this process. */
-  if (argc > 2 && !strcmp(argv[2], "-k"))
+  if (argc > 2 && !strcmp (argv[2], "-k"))
     {
       consume_some_resources_and_die (n);
       NOT_REACHED ();
@@ -129,7 +133,7 @@ main (int argc, char *argv[])
       /* Spawn a child that will be abnormally terminated.
          To speed the test up, do this only for processes
          spawned at a certain depth. */
-      if (n > EXPECTED_DEPTH_TO_PASS/2)
+      if (n > EXPECTED_DEPTH_TO_PASS / 2)
         {
           child_pid = spawn_child (n + 1, CRASH);
           if (child_pid != -1)

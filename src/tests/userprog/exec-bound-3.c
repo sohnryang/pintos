@@ -9,11 +9,11 @@
 #include "tests/main.h"
 
 void
-test_main (void) 
+test_main (void)
 {
   char *p = get_bad_boundary () - 1;
   *p = 'a';
-  exec(p);
+  exec (p);
 
   /* Note: if this test fails to pass even with the official solutions,
      it's probably because memory layout has changed and p no longer

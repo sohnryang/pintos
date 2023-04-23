@@ -6,7 +6,7 @@
 #include "tests/main.h"
 
 void
-test_main (void) 
+test_main (void)
 {
   int handle, byte_cnt;
 
@@ -17,4 +17,3 @@ test_main (void)
   if (byte_cnt != sizeof sample - 1)
     fail ("write() returned %d instead of %zu", byte_cnt, sizeof sample - 1);
 }
-

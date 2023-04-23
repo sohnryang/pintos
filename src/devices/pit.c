@@ -8,8 +8,8 @@
    Refer to [8254] for details. */
 
 /* 8254 registers. */
-#define PIT_PORT_CONTROL          0x43                /* Control port. */
-#define PIT_PORT_COUNTER(CHANNEL) (0x40 + (CHANNEL))  /* Counter port. */
+#define PIT_PORT_CONTROL 0x43                        /* Control port. */
+#define PIT_PORT_COUNTER(CHANNEL) (0x40 + (CHANNEL)) /* Counter port. */
 
 /* PIT cycles per second. */
 #define PIT_HZ 1193180

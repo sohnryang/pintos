@@ -17,7 +17,7 @@ static char buf1[BUF_SIZE];
 static char buf2[BUF_SIZE];
 
 int
-main (int argc, const char *argv[]) 
+main (int argc, const char *argv[])
 {
   int child_idx;
   int fd;
@@ -25,7 +25,7 @@ main (int argc, const char *argv[])
 
   test_name = "child-syn-rw";
   quiet = true;
-  
+
   CHECK (argc == 2, "argc must be 2, actually %d", argc);
   child_idx = atoi (argv[1]);
 
@@ -37,10 +37,10 @@ main (int argc, const char *argv[])
   while (ofs < sizeof buf2)
     {
       int bytes_read = read (fd, buf2 + ofs, sizeof buf2 - ofs);
-      CHECK (bytes_read >= -1 && bytes_read <= (int) (sizeof buf2 - ofs),
+      CHECK (bytes_read >= -1 && bytes_read <= (int)(sizeof buf2 - ofs),
              "%zu-byte read on \"%s\" returned invalid value of %d",
              sizeof buf2 - ofs, file_name, bytes_read);
-      if (bytes_read > 0) 
+      if (bytes_read > 0)
         {
           compare_bytes (buf2 + ofs, buf1 + ofs, bytes_read, ofs, file_name);
           ofs += bytes_read;

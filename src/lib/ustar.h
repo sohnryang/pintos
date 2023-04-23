@@ -11,11 +11,11 @@
    The values here are the bytes that appear in the file format.
    Only types of interest to Pintos are listed here. */
 enum ustar_type
-  {
-    USTAR_REGULAR = '0',        /* Ordinary file. */
-    USTAR_DIRECTORY = '5',      /* Directory. */
-    USTAR_EOF = -1              /* End of archive (not an official value). */
-  };
+{
+  USTAR_REGULAR = '0',   /* Ordinary file. */
+  USTAR_DIRECTORY = '5', /* Directory. */
+  USTAR_EOF = -1         /* End of archive (not an official value). */
+};
 
 /* Size of a ustar archive header, in bytes. */
 #define USTAR_HEADER_SIZE 512

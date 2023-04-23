@@ -12,7 +12,7 @@ test_main (void)
 {
   static const char overwrite[] = "Now is the time for all good...";
   static char buffer[sizeof sample - 1];
-  char *actual = (char *) 0x54321000;
+  char *actual = (char *)0x54321000;
   int handle;
   mapid_t map;
 
@@ -24,7 +24,7 @@ test_main (void)
 
   /* Modify file. */
   CHECK (write (handle, overwrite, strlen (overwrite))
-         == (int) strlen (overwrite),
+             == (int)strlen (overwrite),
          "write \"sample.txt\"");
 
   /* Close mapping.  Data should not be written back, because we
@@ -41,12 +41,12 @@ test_main (void)
   /* Verify that file overwrite worked. */
   if (memcmp (buffer, overwrite, strlen (overwrite))
       || memcmp (buffer + strlen (overwrite), sample + strlen (overwrite),
-                 strlen (sample) - strlen (overwrite))) 
+                 strlen (sample) - strlen (overwrite)))
     {
       if (!memcmp (buffer, sample, strlen (sample)))
         fail ("munmap wrote back clean page");
       else
-        fail ("read surprising data from file"); 
+        fail ("read surprising data from file");
     }
   else
     msg ("file change was retained after munmap");
