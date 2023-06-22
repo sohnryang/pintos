@@ -24,6 +24,12 @@
    that are ready to run but not actually running. */
 static struct list ready_list;
 
+/* List of processes that are currently sleeping. */
+static struct list sleep_list;
+
+/* Minimum value of `wakeup_tick` of the threads. */
+int64_t earliest_wakeup_tick;
+
 /* List of all processes.  Processes are added to this list
    when they are first scheduled and removed when they exit. */
 static struct list all_list;
@@ -92,6 +98,8 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
+  list_init (&sleep_list);
+  earliest_wakeup_tick = 0;
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
@@ -311,6 +319,65 @@ thread_yield (void)
     list_push_back (&ready_list, &cur->elem);
   cur->status = THREAD_READY;
   schedule ();
+  intr_set_level (old_level);
+}
+
+/* Sleeps the thread until specified time. */
+void
+thread_sleep (int64_t wakeup_tick)
+{
+  struct thread *cur = thread_current ();
+  enum intr_level old_level;
+
+  if (cur == idle_thread)
+    return;
+
+  ASSERT (!intr_context ());
+  old_level = intr_disable ();
+  cur->status = THREAD_BLOCKED;
+  cur->wakeup_tick = wakeup_tick;
+  if (earliest_wakeup_tick > wakeup_tick)
+    earliest_wakeup_tick = wakeup_tick;
+  list_push_back (&sleep_list, &cur->elem);
+  schedule ();
+  intr_set_level (old_level);
+}
+
+struct thread *
+thread_find_overslept (int64_t current_ticks)
+{
+  struct thread *t;
+  struct list_elem *el;
+  for (el = list_begin (&sleep_list); el != list_end (&sleep_list); el = list_next (el))
+    {
+      t = list_entry (el, struct thread, elem);
+      if (t->wakeup_tick <= current_ticks && t->status == THREAD_BLOCKED)
+        return t;
+    }
+  return NULL;
+}
+
+/* Wake up all the threads and update `earliest_wakeup_tick`. */
+void
+thread_wakeup (int64_t current_ticks)
+{
+  struct list_elem *el;
+  struct thread *t = NULL;
+  enum intr_level old_level;
+
+  old_level = intr_disable ();
+  while ((t = thread_find_overslept (current_ticks)))
+    {
+      list_remove (&t->elem);
+      list_push_back (&ready_list, &t->elem);
+      t->status = THREAD_READY;
+      for (el = list_begin (&sleep_list); el != list_end (&sleep_list); el = list_next (el))
+        {
+          t = list_entry (el, struct thread, elem);
+          if (earliest_wakeup_tick <= current_ticks || earliest_wakeup_tick > t->wakeup_tick)
+            earliest_wakeup_tick = t->wakeup_tick;
+        }
+    }
   intr_set_level (old_level);
 }
 
