@@ -129,7 +129,6 @@ const char *thread_name (void);
 void thread_exit (void) NO_RETURN;
 void thread_yield (void);
 void thread_sleep (int64_t);
-struct thread *thread_find_overslept (int64_t);
 bool thread_less_wakeup_tick (const struct list_elem *, const struct list_elem *, void *);
 void thread_wakeup (int64_t);
 

@@ -353,20 +353,6 @@ thread_less_wakeup_tick (const struct list_elem *a, const struct list_elem *b, v
   return t_a->wakeup_tick < t_b->wakeup_tick;
 }
 
-struct thread *
-thread_find_overslept (int64_t current_ticks)
-{
-  struct thread *t;
-  struct list_elem *el;
-  for (el = list_begin (&sleep_list); el != list_end (&sleep_list); el = list_next (el))
-    {
-      t = list_entry (el, struct thread, elem);
-      if (t->wakeup_tick <= current_ticks && t->status == THREAD_BLOCKED)
-        return t;
-    }
-  return NULL;
-}
-
 /* Wake up all the threads and update `earliest_wakeup_tick`. */
 void
 thread_wakeup (int64_t current_ticks)
