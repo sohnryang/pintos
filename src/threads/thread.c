@@ -372,21 +372,36 @@ void
 thread_wakeup (int64_t current_ticks)
 {
   struct list_elem *el;
-  struct thread *t = NULL;
+  struct thread *t;
   enum intr_level old_level;
+  struct list new_sleep_list;
 
   old_level = intr_disable ();
-  while ((t = thread_find_overslept (current_ticks)))
+  list_init (&new_sleep_list);
+  while (!list_empty (&sleep_list))
     {
-      list_remove (&t->elem);
-      list_push_back (&ready_list, &t->elem);
-      t->status = THREAD_READY;
-      for (el = list_begin (&sleep_list); el != list_end (&sleep_list); el = list_next (el))
+      el = list_pop_front (&sleep_list);
+      t = list_entry (el, struct thread, elem);
+      if (t->wakeup_tick <= current_ticks && t->status == THREAD_BLOCKED)
         {
-          t = list_entry (el, struct thread, elem);
-          if (earliest_wakeup_tick <= current_ticks || earliest_wakeup_tick > t->wakeup_tick)
-            earliest_wakeup_tick = t->wakeup_tick;
+          list_push_back (&ready_list, el);
+          t->status = THREAD_READY;
         }
+      else
+        list_push_back (&new_sleep_list, el);
+    }
+  if (list_empty (&new_sleep_list))
+    earliest_wakeup_tick = 0;
+  else
+    {
+      el = list_min (&new_sleep_list, thread_less_wakeup_tick, NULL);
+      t = list_entry (el, struct thread, elem);
+      earliest_wakeup_tick = t->wakeup_tick;
+    }
+  while (!list_empty (&new_sleep_list))
+    {
+      el = list_pop_front (&new_sleep_list);
+      list_push_back (&sleep_list, el);
     }
   intr_set_level (old_level);
 }
