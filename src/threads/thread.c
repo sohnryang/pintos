@@ -99,7 +99,7 @@ thread_init (void)
   list_init (&ready_list);
   list_init (&all_list);
   list_init (&sleep_list);
-  earliest_wakeup_tick = 0;
+  earliest_wakeup_tick = INT64_MAX;
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
@@ -377,7 +377,7 @@ thread_wakeup (int64_t current_ticks)
         list_push_back (&new_sleep_list, el);
     }
   if (list_empty (&new_sleep_list))
-    earliest_wakeup_tick = 0;
+    earliest_wakeup_tick = INT64_MAX;
   else
     {
       el = list_min (&new_sleep_list, thread_less_wakeup_tick, NULL);
