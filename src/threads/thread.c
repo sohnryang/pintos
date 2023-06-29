@@ -410,6 +410,20 @@ thread_foreach (thread_action_func *func, void *aux)
     }
 }
 
+/* Check if some thread in `ready_list` is preemptible. */
+bool
+thread_is_preemptible (void)
+{
+  struct thread *cur, *next;
+  struct list_elem *next_el;
+  if (list_empty (&ready_list))
+    return false;
+  cur = thread_current ();
+  next_el = list_front (&ready_list);
+  next = list_entry (next_el, struct thread, elem);
+  return cur->priority < next->priority;
+}
+
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority)
