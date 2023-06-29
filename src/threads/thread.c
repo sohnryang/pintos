@@ -345,7 +345,8 @@ thread_sleep (int64_t wakeup_tick)
 
 /* Compare list elements using `wakeup_tick` of threads. */
 bool
-thread_less_wakeup_tick (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
+thread_less_wakeup_tick (const struct list_elem *a, const struct list_elem *b,
+                         void *aux UNUSED)
 {
   struct thread *t_a, *t_b;
   t_a = list_entry (a, struct thread, elem);
