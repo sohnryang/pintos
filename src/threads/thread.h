@@ -124,8 +124,8 @@ typedef void thread_func (void *aux);
 tid_t thread_create (const char *name, int priority, thread_func *, void *);
 
 void thread_block (void);
-bool thread_compare_priority (const struct list_elem *, const struct list_elem *,
-                              void *);
+bool thread_compare_priority (const struct list_elem *,
+                              const struct list_elem *, void *);
 void thread_unblock (struct thread *);
 
 struct thread *thread_current (void);
@@ -135,8 +135,8 @@ const char *thread_name (void);
 void thread_exit (void) NO_RETURN;
 void thread_yield (void);
 void thread_sleep (int64_t);
-bool thread_less_wakeup_tick (const struct list_elem *, const struct list_elem *,
-                              void *);
+bool thread_less_wakeup_tick (const struct list_elem *,
+                              const struct list_elem *, void *);
 void thread_wakeup (int64_t);
 
 /* Performs some operation on thread t, given auxiliary data AUX. */
