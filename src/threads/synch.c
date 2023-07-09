@@ -200,12 +200,26 @@ lock_init (struct lock *lock)
 void
 lock_acquire (struct lock *lock)
 {
+  struct thread *cur, *holder;
+
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
 
+  cur = thread_current ();
+  holder = lock->holder;
+  if (holder != NULL)
+    {
+      ASSERT (cur->wait_on_lock == NULL);
+      cur->wait_on_lock = lock;
+      lock_propagate_donation (lock, cur->priority);
+    }
+
   sema_down (&lock->semaphore);
-  lock->holder = thread_current ();
+  list_push_back (&cur->held_locks, &lock->elem);
+  cur->wait_on_lock = NULL;
+  lock->holder = cur;
+  thread_fix_priority (cur);
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -236,10 +250,17 @@ lock_try_acquire (struct lock *lock)
 void
 lock_release (struct lock *lock)
 {
+  struct thread *cur;
+
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
 
   lock->holder = NULL;
+  list_remove (&lock->elem);
+  cur = thread_current ();
+  thread_fix_priority (cur);
+  if (cur->wait_on_lock != NULL)
+    lock_propagate_donation (cur->wait_on_lock, 0);
   sema_up (&lock->semaphore);
 }
 
@@ -252,6 +273,81 @@ lock_held_by_current_thread (const struct lock *lock)
   ASSERT (lock != NULL);
 
   return lock->holder == thread_current ();
+}
+
+/* Get priority donated by threads waiting on `lock`. */
+int
+lock_get_donation (struct lock *lock)
+{
+  struct list_elem *el;
+  struct thread *t;
+
+  if (list_empty (&lock->semaphore.waiters))
+    return 0;
+  el = list_begin (&lock->semaphore.waiters);
+  t = list_entry (el, struct thread, elem);
+  return t->priority;
+}
+
+/* Compare donatable priority between two locks. */
+bool
+lock_compare_max_donation (const struct list_elem *a,
+                           const struct list_elem *b, void *aux UNUSED)
+{
+  struct lock *l_a, *l_b;
+  l_a = list_entry (a, struct lock, elem);
+  l_b = list_entry (b, struct lock, elem);
+  return lock_get_donation (l_a) < lock_get_donation (l_b);
+}
+
+/* Fix order of `el` in waiters list of `lock`. */
+void
+lock_fix_waiters_order (struct lock *lock, struct list_elem *el)
+{
+  list_remove (el);
+  list_insert_ordered (&lock->semaphore.waiters, el, thread_compare_priority,
+                       NULL);
+}
+
+/* Propagate donation from the `lock`. */
+void
+lock_propagate_donation (struct lock *lock, int priority_new)
+{
+  struct thread *holder, *last_holder;
+  struct lock *wait_lock;
+  int donation_max;
+  bool donated, first;
+
+  last_holder = NULL;
+  holder = lock->holder;
+  donated = true;
+  first = true;
+  while (donated)
+    {
+      donation_max = thread_get_donation (holder);
+      if (first && donation_max < priority_new)
+        donation_max = priority_new;
+      if (first)
+        first = false;
+      if (donation_max <= holder->priority_before_donation)
+        {
+          holder->priority = holder->priority_before_donation;
+          donated = false;
+        }
+      else
+        holder->priority = donation_max;
+      wait_lock = holder->wait_on_lock;
+      if (wait_lock == NULL)
+        break;
+      lock_fix_waiters_order (wait_lock, &holder->elem);
+      last_holder = holder;
+      holder = wait_lock->holder;
+    }
+
+  if (last_holder != NULL && last_holder->status == THREAD_READY)
+    thread_fix_ready_list_order (&last_holder->elem);
+  if (holder != NULL && holder->status == THREAD_READY)
+    thread_fix_ready_list_order (&holder->elem);
 }
 
 /* One semaphore in a list. */
