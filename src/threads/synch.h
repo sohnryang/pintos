@@ -22,6 +22,7 @@ struct lock
 {
   struct thread *holder;      /* Thread holding lock (for debugging). */
   struct semaphore semaphore; /* Binary semaphore controlling access. */
+  struct list_elem elem;      /* List element used by synch.c */
 };
 
 void lock_init (struct lock *);
@@ -29,6 +30,11 @@ void lock_acquire (struct lock *);
 bool lock_try_acquire (struct lock *);
 void lock_release (struct lock *);
 bool lock_held_by_current_thread (const struct lock *);
+int lock_get_donation (struct lock *);
+bool lock_compare_max_donation (const struct list_elem *,
+                                const struct list_elem *, void *);
+void lock_fix_waiters_order (struct lock *, struct list_elem *);
+void lock_propagate_donation (struct lock *, int);
 
 /* Condition variable. */
 struct condition
