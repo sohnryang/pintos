@@ -452,6 +452,47 @@ thread_get_priority (void)
   return thread_current ()->priority;
 }
 
+/* Fix order of `el` in ready_list. */
+void
+thread_fix_ready_list_order (struct list_elem *el)
+{
+  enum intr_level old_level;
+
+  ASSERT (!intr_context ());
+  old_level = intr_disable ();
+  list_remove (el);
+  list_insert_ordered (&ready_list, el, thread_compare_priority, NULL);
+  intr_set_level (old_level);
+}
+
+/* Get donation from locks. */
+int
+thread_get_donation (struct thread *t)
+{
+  struct list_elem *donation_max_el;
+  struct lock *donation_max_lock;
+
+  if (list_empty (&t->held_locks))
+    return 0;
+  donation_max_el = list_max (&t->held_locks, lock_compare_max_donation,
+                              NULL);
+  donation_max_lock = list_entry (donation_max_el, struct lock, elem);
+  return lock_get_donation (donation_max_lock);
+}
+
+/* Fix priority of the given thread. */
+void
+thread_fix_priority (struct thread *t)
+{
+  int donation_max;
+
+  donation_max = thread_get_donation (t);
+  if (donation_max > t->priority_before_donation)
+    t->priority = donation_max;
+  else
+    t->priority = t->priority_before_donation;
+}
+
 /* Sets the current thread's nice value to NICE. */
 void
 thread_set_nice (int nice UNUSED)

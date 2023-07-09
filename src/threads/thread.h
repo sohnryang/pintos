@@ -146,6 +146,9 @@ void thread_foreach (thread_action_func *, void *);
 int thread_get_priority (void);
 bool thread_is_preemptible (void);
 void thread_set_priority (int);
+void thread_fix_ready_list_order (struct list_elem *);
+int thread_get_donation (struct thread *);
+void thread_fix_priority (struct thread *);
 
 int thread_get_nice (void);
 void thread_set_nice (int);
