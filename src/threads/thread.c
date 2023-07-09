@@ -440,7 +440,13 @@ thread_is_preemptible (void)
 void
 thread_set_priority (int new_priority)
 {
-  thread_current ()->priority = new_priority;
+  struct thread *cur;
+
+  cur = thread_current ();
+  cur->priority_before_donation = new_priority;
+  thread_fix_priority (cur);
+  if (cur->wait_on_lock != NULL)
+    lock_propagate_donation (cur->wait_on_lock, 0);
   if (thread_is_preemptible ())
     thread_yield ();
 }
