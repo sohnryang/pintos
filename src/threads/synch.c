@@ -109,6 +109,8 @@ sema_try_down (struct semaphore *sema)
 void
 sema_up (struct semaphore *sema)
 {
+  struct list_elem *max_priority_el;
+  struct thread *max_priority_thread;
   enum intr_level old_level;
   bool unblocked;
 
@@ -118,8 +120,11 @@ sema_up (struct semaphore *sema)
   unblocked = false;
   if (!list_empty (&sema->waiters))
     {
-      thread_unblock (list_entry (list_pop_front (&sema->waiters),
-                                  struct thread, elem));
+      max_priority_el = list_min (&sema->waiters, thread_compare_priority,
+                                  NULL);
+      max_priority_thread = list_entry (max_priority_el, struct thread, elem);
+      list_remove (max_priority_el);
+      thread_unblock (max_priority_thread);
       unblocked = true;
     }
   sema->value++;
