@@ -334,9 +334,9 @@ lock_propagate_donation (struct lock *lock, int priority_new)
         donation_max = priority_new;
       if (first)
         first = false;
-      if (donation_max <= holder->priority_before_donation)
+      if (donation_max <= holder->base_priority)
         {
-          holder->priority = holder->priority_before_donation;
+          holder->priority = holder->base_priority;
           donated = false;
         }
       else

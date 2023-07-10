@@ -447,7 +447,7 @@ thread_set_priority (int new_priority)
   struct thread *cur;
 
   cur = thread_current ();
-  cur->priority_before_donation = new_priority;
+  cur->base_priority = new_priority;
   thread_fix_priority (cur);
   if (cur->wait_on_lock != NULL)
     lock_propagate_donation (cur->wait_on_lock, 0);
@@ -497,10 +497,10 @@ thread_fix_priority (struct thread *t)
   int donation_max;
 
   donation_max = thread_get_donation (t);
-  if (donation_max > t->priority_before_donation)
+  if (donation_max > t->base_priority)
     t->priority = donation_max;
   else
-    t->priority = t->priority_before_donation;
+    t->priority = t->base_priority;
 }
 
 /* Sets the current thread's nice value to NICE. */
@@ -624,7 +624,7 @@ init_thread (struct thread *t, const char *name, int priority)
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *)t + PGSIZE;
   t->priority = priority;
-  t->priority_before_donation = priority;
+  t->base_priority = priority;
   t->magic = THREAD_MAGIC;
   list_init (&t->held_locks);
 
