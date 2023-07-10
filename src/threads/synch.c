@@ -362,6 +362,45 @@ struct semaphore_elem
   struct semaphore semaphore; /* This semaphore. */
 };
 
+/* Return list element corresponding to semaphore that has less maximum
+   priority. */
+bool
+sema_less_priority (const struct list_elem *a, const struct list_elem *b,
+                    void *aux UNUSED)
+{
+  struct semaphore_elem *se_a, *se_b;
+  struct semaphore *sema_a, *sema_b;
+  struct list_elem *max_priority_el_a, *max_priority_el_b;
+  struct thread *max_priority_thread_a, *max_priority_thread_b;
+  int max_priority_a, max_priority_b;
+
+  se_a = list_entry (a, struct semaphore_elem, elem);
+  se_b = list_entry (b, struct semaphore_elem, elem);
+  sema_a = &se_a->semaphore;
+  sema_b = &se_b->semaphore;
+  if (list_empty (&sema_a->waiters))
+    max_priority_a = 0;
+  else
+    {
+      max_priority_el_a = list_min (&sema_a->waiters, thread_compare_priority,
+                                    NULL);
+      max_priority_thread_a = list_entry (max_priority_el_a, struct thread,
+                                          elem);
+      max_priority_a = max_priority_thread_a->priority;
+    }
+  if (list_empty (&sema_b->waiters))
+    max_priority_b = 0;
+  else
+    {
+      max_priority_el_b = list_min (&sema_b->waiters, thread_compare_priority,
+                                    NULL);
+      max_priority_thread_b = list_entry (max_priority_el_b, struct thread,
+                                          elem);
+      max_priority_b = max_priority_thread_b->priority;
+    }
+  return max_priority_a < max_priority_b;
+}
+
 /* Initializes condition variable COND.  A condition variable
    allows one piece of code to signal a condition and cooperating
    code to receive the signal and act upon it. */
