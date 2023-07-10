@@ -239,6 +239,8 @@ thread_compare_priority (const struct list_elem *a, const struct list_elem *b,
   struct thread *t_a, *t_b;
   t_a = list_entry (a, struct thread, elem);
   t_b = list_entry (b, struct thread, elem);
+  ASSERT (is_thread (t_a));
+  ASSERT (is_thread (t_b));
   return t_a->priority > t_b->priority;
 }
 
@@ -366,6 +368,8 @@ thread_less_wakeup_tick (const struct list_elem *a, const struct list_elem *b,
   struct thread *t_a, *t_b;
   t_a = list_entry (a, struct thread, elem);
   t_b = list_entry (b, struct thread, elem);
+  ASSERT (is_thread (t_a));
+  ASSERT (is_thread (t_b));
   return t_a->wakeup_tick < t_b->wakeup_tick;
 }
 
