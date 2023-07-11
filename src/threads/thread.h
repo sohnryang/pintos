@@ -98,6 +98,9 @@ struct thread
   struct lock *wait_on_lock; /* Lock this thread is waiting for. */
   int base_priority;         /* Priority before donation. */
 
+  int nice;
+  int recent_cpu;
+
 #ifdef USERPROG
   /* Owned by userprog/process.c. */
   uint32_t *pagedir; /* Page directory. */

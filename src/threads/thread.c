@@ -482,6 +482,9 @@ thread_get_donation (struct thread *t)
   struct list_elem *donation_max_el;
   struct lock *donation_max_lock;
 
+  if (thread_mlfqs)
+    return 0;
+
   if (list_empty (&t->held_locks))
     return 0;
   donation_max_el = list_max (&t->held_locks, lock_compare_max_donation,
@@ -496,6 +499,9 @@ thread_fix_priority (struct thread *t)
 {
   int donation_max;
 
+  if (thread_mlfqs)
+    return;
+
   donation_max = thread_get_donation (t);
   if (donation_max > t->base_priority)
     t->priority = donation_max;
@@ -505,17 +511,19 @@ thread_fix_priority (struct thread *t)
 
 /* Sets the current thread's nice value to NICE. */
 void
-thread_set_nice (int nice UNUSED)
+thread_set_nice (int nice)
 {
-  /* Not yet implemented. */
+  struct thread *cur;
+
+  cur = thread_current ();
+  cur->nice = nice;
 }
 
 /* Returns the current thread's nice value. */
 int
 thread_get_nice (void)
 {
-  /* Not yet implemented. */
-  return 0;
+  return thread_current ()->nice;
 }
 
 /* Returns 100 times the system load average. */
