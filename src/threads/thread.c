@@ -575,6 +575,7 @@ thread_set_nice (int nice)
 
   cur = thread_current ();
   cur->nice = nice;
+  thread_fix_priority (cur, NULL);
 }
 
 /* Returns the current thread's nice value. */
