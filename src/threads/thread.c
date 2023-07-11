@@ -526,6 +526,47 @@ thread_fix_priority (struct thread *t, void *aux UNUSED)
     t->priority = t->base_priority;
 }
 
+void
+thread_fix_priority_all (void)
+{
+  thread_foreach (thread_fix_priority, NULL);
+}
+
+void
+thread_update_load_average (void)
+{
+  int ready_threads;
+
+  ready_threads = list_size (&ready_list);
+  if (thread_current () != idle_thread)
+    ready_threads++;
+  load_average = fixed_add (
+      fixed_div_by_int (fixed_mul_by_int (load_average, 59), 60),
+      fixed_div_by_int (fixed_from_int (ready_threads), 60));
+}
+
+void
+thread_update_recent_cpu (struct thread *t, void *aux UNUSED)
+{
+  fixed decay;
+
+  if (t == idle_thread)
+    return;
+
+  decay = fixed_div (fixed_mul_by_int (load_average, 2),
+                     fixed_add (fixed_mul_by_int (load_average, 2),
+                                FIXED_UNIT));
+  t->recent_cpu = fixed_add (fixed_mul (decay, t->recent_cpu),
+                             fixed_from_int (t->nice));
+}
+
+void
+thread_update_recent_cpu_all (void)
+{
+  thread_update_load_average ();
+  thread_foreach (thread_update_recent_cpu, NULL);
+}
+
 /* Sets the current thread's nice value to NICE. */
 void
 thread_set_nice (int nice)
