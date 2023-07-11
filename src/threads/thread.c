@@ -503,10 +503,21 @@ thread_get_donation (struct thread *t)
 void
 thread_fix_priority (struct thread *t, void *aux UNUSED)
 {
-  int donation_max;
+  int donation_max, priority_new;
 
   if (thread_mlfqs)
-    return;
+    {
+      priority_new = PRI_MAX
+                     + fixed_to_int_round (
+                         fixed_div_by_int (-t->recent_cpu, 4))
+                     - t->nice * 2;
+      if (priority_new > PRI_MAX)
+        priority_new = PRI_MAX;
+      if (priority_new < PRI_MIN)
+        priority_new = PRI_MIN;
+      t->priority = priority_new;
+      return;
+    }
 
   donation_max = thread_get_donation (t);
   if (donation_max > t->base_priority)
