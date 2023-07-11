@@ -1,6 +1,8 @@
 #ifndef THREADS_THREAD_H
 #define THREADS_THREAD_H
 
+#include "threads/fixed_arith.h"
+
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
@@ -98,8 +100,8 @@ struct thread
   struct lock *wait_on_lock; /* Lock this thread is waiting for. */
   int base_priority;         /* Priority before donation. */
 
-  int nice;
-  int recent_cpu;
+  int nice;         /* Nice value. */
+  fixed recent_cpu; /* CPU usage of this thread. */
 
 #ifdef USERPROG
   /* Owned by userprog/process.c. */
