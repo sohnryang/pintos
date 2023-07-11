@@ -224,7 +224,7 @@ lock_acquire (struct lock *lock)
   list_push_back (&cur->held_locks, &lock->elem);
   cur->wait_on_lock = NULL;
   lock->holder = cur;
-  thread_fix_priority (cur);
+  thread_fix_priority (cur, NULL);
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -263,7 +263,7 @@ lock_release (struct lock *lock)
   lock->holder = NULL;
   list_remove (&lock->elem);
   cur = thread_current ();
-  thread_fix_priority (cur);
+  thread_fix_priority (cur, NULL);
   if (cur->wait_on_lock != NULL)
     lock_propagate_donation (cur->wait_on_lock, 0);
   sema_up (&lock->semaphore);

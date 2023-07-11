@@ -448,7 +448,7 @@ thread_set_priority (int new_priority)
 
   cur = thread_current ();
   cur->base_priority = new_priority;
-  thread_fix_priority (cur);
+  thread_fix_priority (cur, NULL);
   if (cur->wait_on_lock != NULL)
     lock_propagate_donation (cur->wait_on_lock, 0);
   if (thread_is_preemptible ())
@@ -495,7 +495,7 @@ thread_get_donation (struct thread *t)
 
 /* Fix priority of the given thread. */
 void
-thread_fix_priority (struct thread *t)
+thread_fix_priority (struct thread *t, void *aux UNUSED)
 {
   int donation_max;
 
