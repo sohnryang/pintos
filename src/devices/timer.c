@@ -4,6 +4,7 @@
 #include <round.h>
 #include <stdio.h>
 #include "devices/pit.h"
+#include "threads/fixed_arith.h"
 #include "threads/interrupt.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
@@ -170,8 +171,20 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
+  struct thread *cur;
+
   ticks++;
   thread_tick ();
+
+  cur = thread_current ();
+  if (thread_mlfqs)
+    {
+      cur->recent_cpu = fixed_add (cur->recent_cpu, FIXED_UNIT);
+      if (ticks % 4 == 0)
+        thread_fix_priority_all ();
+      if (ticks % TIMER_FREQ == 0)
+        thread_update_recent_cpu_all ();
+    }
 
   if (earliest_wakeup_tick > ticks)
     return;
