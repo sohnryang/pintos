@@ -1,0 +1,218 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Threads: Make",
+            "command": "make",
+            "args": [
+                "-j24"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/threads"
+            },
+            "problemMatcher": [
+                {
+                    "base": "$gcc",
+                    "fileLocation": [
+                        "relative",
+                        "${workspaceFolder}/src/threads/build"
+                    ]
+                }
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "Threads: Clean",
+            "command": "make",
+            "args": [
+                "clean"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/threads"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Threads: Generate compile_commands.json",
+            "command": "compiledb",
+            "args": [
+                "make",
+                "-j24"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/threads"
+            },
+            "dependsOn": [
+                "Threads: Clean"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "Userprog: Make",
+            "command": "make",
+            "args": [
+                "-j24"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/userprog"
+            },
+            "problemMatcher": [
+                {
+                    "base": "$gcc",
+                    "fileLocation": [
+                        "relative",
+                        "${workspaceFolder}/src/userprog/build"
+                    ]
+                }
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "Userprog: Clean",
+            "command": "make",
+            "args": [
+                "clean"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/userprog"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Userprog: Generate compile_commands.json",
+            "command": "compiledb",
+            "args": [
+                "make",
+                "-j24"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/userprog"
+            },
+            "dependsOn": [
+                "Userprog: Clean"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "VM: Make",
+            "command": "make",
+            "args": [
+                "-j24"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/vm"
+            },
+            "problemMatcher": [
+                {
+                    "base": "$gcc",
+                    "fileLocation": [
+                        "relative",
+                        "${workspaceFolder}/src/vm/build"
+                    ]
+                }
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "VM: Clean",
+            "command": "make",
+            "args": [
+                "clean"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/vm"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "VM: Generate compile_commands.json",
+            "command": "compiledb",
+            "args": [
+                "make",
+                "-j24"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/vm"
+            },
+            "dependsOn": [
+                "VM: Clean"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "Filesys: Make",
+            "command": "make",
+            "args": [
+                "-j24"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/filesys"
+            },
+            "problemMatcher": [
+                {
+                    "base": "$gcc",
+                    "fileLocation": [
+                        "relative",
+                        "${workspaceFolder}/src/filesys/build"
+                    ]
+                }
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "Filesys: Clean",
+            "command": "make",
+            "args": [
+                "clean"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/filesys"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Filesys: Generate compile_commands.json",
+            "command": "compiledb",
+            "args": [
+                "make",
+                "-j24"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/Filesys"
+            },
+            "dependsOn": [
+                "Filesys: Clean"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "Build all",
+            "dependsOn": [
+                "Threads: Make",
+                "Userprog: Make",
+                "VM: Make",
+                "Filesys: Make"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Generate compile_commands.json",
+            "dependsOn": [
+                "Threads: Generate compile_commands.json",
+                "Userprog: Generate compile_commands.json",
+                "VM: Generate compile_commands.json",
+                "Filesys: Generate compile_commands.json"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
