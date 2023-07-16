@@ -129,7 +129,12 @@ sema_up (struct semaphore *sema)
     }
   sema->value++;
   if (unblocked && thread_is_preemptible ())
-    thread_yield ();
+    {
+      if (intr_context ())
+        intr_yield_on_return ();
+      else
+        thread_yield ();
+    }
   intr_set_level (old_level);
 }
 
