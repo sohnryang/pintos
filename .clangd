@@ -1,0 +1,19 @@
+If:
+  PathMatch: src/threads/.*
+
+CompileFlags:
+  CompilationDatabase: src/threads
+
+---
+If:
+  PathMatch: src/userprog/.*
+
+CompileFlags:
+  CompilationDatabase: src/userprog
+
+---
+If:
+  PathMatch: src/filesys/.*
+
+CompileFlags:
+  CompilationDatabase: src/filesys
