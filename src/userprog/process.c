@@ -134,19 +134,32 @@ push_args (int argc, char **argv, void **sp)
 static void
 start_process (void *file_name_)
 {
-  char *file_name = file_name_;
+  char *file_name = file_name_, *file_name_copy, *file_name_copy_orig,
+       *prog_name;
+  char **argv;
+  int argc;
   struct intr_frame if_;
   bool success;
+
+  file_name_copy = palloc_get_page (0);
+  strlcpy (file_name_copy, file_name, PGSIZE);
+  file_name_copy_orig = file_name_copy;
+  argv = palloc_get_page (0);
+  argc = parse_args (file_name_copy, argv);
+  prog_name = argv[0];
 
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-  success = load (file_name, &if_.eip, &if_.esp);
+  success = load (prog_name, &if_.eip, &if_.esp);
+  push_args (argc, argv, &if_.esp);
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
+  palloc_free_page (argv);
+  palloc_free_page (file_name_copy_orig);
   if (!success)
     thread_exit ();
 
