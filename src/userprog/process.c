@@ -50,6 +50,25 @@ process_execute (const char *file_name)
   return tid;
 }
 
+/* Parse arguments in `cmdline` to `argv`. Returns number of arguments.
+   Note: This function modifies `cmdline` because of implementation of
+   `strtok_r`. */
+static int
+parse_args (char *cmdline, char **argv)
+{
+  int argc;
+  char *token, *last;
+
+  argc = 0;
+  for (token = strtok_r (cmdline, " ", &last); token;
+       token = strtok_r (NULL, " ", &last))
+    {
+      argv[argc] = token;
+      argc++;
+    }
+  return argc;
+}
+
 /* A thread function that loads a user process and starts it
    running. */
 static void
