@@ -69,6 +69,66 @@ parse_args (char *cmdline, char **argv)
   return argc;
 }
 
+/* Push `argc` arguments in `argv` to the stack, which is pointed by `sp`. */
+static void
+push_args (int argc, char **argv, void **sp)
+{
+  int i, *argc_ptr;
+  char *arg_ptr, *argv_last_arg_end, **arg_addr_ptr, ***argv_ptr;
+  unsigned int arg_len;
+  uintptr_t unaligned;
+  void (*return_ptr) (void);
+
+  /* Write arg strings stored in `argv`. */
+  argv_last_arg_end = *sp;
+  for (i = argc - 1; i >= 0; i--)
+    {
+      arg_ptr = *sp;
+      arg_len = strlen (argv[i]);
+      arg_ptr -= (arg_len + 1);
+      strlcpy (arg_ptr, argv[i], arg_len + 1);
+      *sp = arg_ptr;
+    }
+
+  /* Align the stack. */
+  unaligned = (uintptr_t)*sp;
+  unaligned -= unaligned % 4;
+  *sp = (void *)unaligned;
+
+  /* Write sentinel value of `argv`. */
+  arg_addr_ptr = *sp;
+  arg_addr_ptr--;
+  *arg_addr_ptr = NULL;
+
+  /* Write addresses of args. */
+  arg_ptr = argv_last_arg_end;
+  for (i = argc - 1; i >= 0; i--)
+    {
+      arg_len = strlen (argv[i]);
+      arg_ptr -= (arg_len + 1);
+      arg_addr_ptr--;
+      *arg_addr_ptr = arg_ptr;
+    }
+  *sp = arg_addr_ptr;
+
+  /* Write address to `argv`. */
+  argv_ptr = *sp;
+  argv_ptr--;
+  *argv_ptr = arg_addr_ptr;
+  *sp = argv_ptr;
+
+  /* Write `argc`. */
+  argc_ptr = *sp;
+  argc_ptr--;
+  *argc_ptr = argc;
+  *sp = argc_ptr;
+
+  /* Write dummy return address. */
+  return_ptr = *sp;
+  return_ptr--;
+  *sp = return_ptr;
+}
+
 /* A thread function that loads a user process and starts it
    running. */
 static void
