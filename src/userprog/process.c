@@ -29,6 +29,8 @@ tid_t
 process_execute (const char *file_name)
 {
   char *fn_copy;
+  int i;
+  char prog_name[16];
   tid_t tid;
 
   /* Make a copy of FILE_NAME.
@@ -39,7 +41,10 @@ process_execute (const char *file_name)
   strlcpy (fn_copy, file_name, PGSIZE);
 
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
+  for (i = 0; file_name[i] != ' ' && file_name[i] != '\0' && i < 15; i++)
+    prog_name[i] = file_name[i];
+  prog_name[i] = '\0';
+  tid = thread_create (prog_name, PRI_DEFAULT, start_process, fn_copy);
   if (tid == TID_ERROR)
     palloc_free_page (fn_copy);
   return tid;
