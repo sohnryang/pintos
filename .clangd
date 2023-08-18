@@ -17,3 +17,10 @@ If:
 
 CompileFlags:
   CompilationDatabase: src/filesys
+
+---
+If:
+  PathMatch: src/examples/.*
+
+CompileFlags:
+  CompilationDatabase: src/examples
