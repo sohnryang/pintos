@@ -6,7 +6,7 @@
 #include "threads/thread.h"
 
 static void syscall_handler (struct intr_frame *);
-static int syscall_halt (void *);
+static int syscall_halt (void *) NO_RETURN;
 static int syscall_exit (void *);
 static int syscall_exec (void *);
 static int syscall_wait (void *);
@@ -69,8 +69,7 @@ syscall_handler (struct intr_frame *f)
 static int
 syscall_halt (void *sp UNUSED)
 {
-  printf ("SYS_HALT()\n");
-  return 0;
+  shutdown_power_off ();
 }
 
 /* System call handler for `EXIT`. */
