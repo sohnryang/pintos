@@ -1,19 +1,19 @@
 If:
-  PathMatch: src/threads/.*
+  PathMatch: [src/threads/.*, src/tests/threads/.*]
 
 CompileFlags:
   CompilationDatabase: src/threads
 
 ---
 If:
-  PathMatch: src/userprog/.*
+  PathMatch: [src/userprog/.*, src/tests/userprog/.*]
 
 CompileFlags:
   CompilationDatabase: src/userprog
 
 ---
 If:
-  PathMatch: src/filesys/.*
+  PathMatch: [src/filesys/.*, src/filesys/.*]
 
 CompileFlags:
   CompilationDatabase: src/filesys
