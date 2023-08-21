@@ -2,6 +2,7 @@
 #define THREADS_THREAD_H
 
 #include "threads/fixed_arith.h"
+#include "threads/synch.h"
 
 #include <debug.h>
 #include <list.h>
@@ -25,6 +26,22 @@ typedef int tid_t;
 #define PRI_MIN 0      /* Lowest priority. */
 #define PRI_DEFAULT 31 /* Default priority. */
 #define PRI_MAX 63     /* Highest priority. */
+
+#ifdef USERPROG
+/* Context of user process. */
+struct process_context
+{
+  tid_t pid; /* PId of process. */
+
+  int exit_code;              /* Exit code of the process. */
+  struct semaphore exit_sema; /* Semaphore for determining exit. */
+
+  bool load_success;          /* Flag for determining load success. */
+  struct semaphore load_sema; /* Condition variable for determining loading. */
+
+  struct list_elem child_ctx_elem; /* List element for `children_ctx_list`. */
+};
+#endif
 
 /* A kernel thread or user process.
 
