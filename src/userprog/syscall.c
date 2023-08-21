@@ -3,11 +3,13 @@
 #include <syscall-nr.h>
 #include "devices/shutdown.h"
 #include "threads/interrupt.h"
+#include "threads/synch.h"
 #include "threads/thread.h"
+#include "userprog/process.h"
 
 static void syscall_handler (struct intr_frame *);
 static int syscall_halt (void *) NO_RETURN;
-static int syscall_exit (void *);
+static int syscall_exit (void *) NO_RETURN;
 static int syscall_exec (void *);
 static int syscall_wait (void *);
 static int syscall_create (void *);
@@ -77,10 +79,13 @@ static int
 syscall_exit (void *sp)
 {
   int status;
+  struct thread *cur;
 
   pop_arg (int, status, sp);
-  printf ("SYS_EXIT(%d)\n", status);
-  return 0;
+  cur = thread_current ();
+  cur->process_ctx->exit_code = status;
+  sema_up (&cur->process_ctx->exit_sema);
+  thread_exit ();
 }
 
 /* System call handler for `EXEC`. */
