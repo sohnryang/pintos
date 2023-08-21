@@ -212,6 +212,20 @@ thread_create (const char *name, int priority,
   sf->eip = switch_entry;
   sf->ebp = 0;
 
+#ifdef USERPROG
+  struct thread *cur;
+
+  /* Create process context. */
+  t->process_ctx = palloc_get_page (PAL_ZERO);
+  t->process_ctx->pid = tid;
+  sema_init (&t->process_ctx->exit_sema, 0);
+  sema_init (&t->process_ctx->load_sema, 0);
+
+  /* Add child info to parent's `children_ctx_list`. */
+  cur = thread_current ();
+  list_push_back (&cur->children_ctx_list, &t->process_ctx->child_ctx_elem);
+#endif
+
   /* Add to run queue. */
   thread_unblock (t);
 
