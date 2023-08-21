@@ -122,7 +122,11 @@ struct thread
 
 #ifdef USERPROG
   /* Owned by userprog/process.c. */
-  uint32_t *pagedir; /* Page directory. */
+  uint32_t *pagedir;                   /* Page directory. */
+  struct process_context *process_ctx; /* Process context. */
+
+  struct thread *parent;         /* Pointer to parent thread. */
+  struct list children_ctx_list; /* List of `child_info`. */
 #endif
 
   /* Owned by thread.c. */
