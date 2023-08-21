@@ -103,11 +103,12 @@ syscall_exec (void *sp)
 static int
 syscall_wait (void *sp)
 {
-  int pid; // pid_t is typedef'd as int
+  int pid; /* pid_t is typedef'd as int. */
+  int status_code;
 
   pop_arg (int, pid, sp);
-  printf ("SYS_WAIT(%d)\n", pid);
-  return 0;
+  status_code = process_wait (pid);
+  return status_code;
 }
 
 /* System call handler for `CREATE`. */
