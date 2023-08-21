@@ -208,9 +208,17 @@ start_process (void *file_name_)
    This function will be implemented in problem 2-2.  For now, it
    does nothing. */
 int
-process_wait (tid_t child_tid UNUSED)
+process_wait (tid_t child_tid)
 {
-  return -1;
+  struct process_context *child_ctx = child_ctx_by_pid (child_tid);
+  int exit_code;
+
+  sema_down (&child_ctx->exit_sema);
+
+  exit_code = child_ctx->exit_code;
+  list_remove (&child_ctx->child_ctx_elem);
+  palloc_free_page (child_ctx);
+  return exit_code;
 }
 
 /* Free the current process's resources. */
