@@ -2,7 +2,7 @@ If:
   PathMatch: [src/threads/.*, src/tests/threads/.*]
 
 CompileFlags:
-  CompilationDatabase: src/threads
+  CompilationDatabase: src/userprog
 
 ---
 If:
