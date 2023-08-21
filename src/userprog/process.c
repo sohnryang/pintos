@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "list.h"
 #include "userprog/gdt.h"
 #include "userprog/pagedir.h"
 #include "userprog/tss.h"
@@ -18,6 +19,7 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 
+static struct process_context *child_ctx_by_pid (tid_t pid);
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
@@ -127,6 +129,25 @@ push_args (int argc, char **argv, void **sp)
   return_ptr = *sp;
   return_ptr--;
   *sp = return_ptr;
+}
+
+/* Get the `process_ctx` of child process by using PID as key. */
+static struct process_context *
+child_ctx_by_pid (tid_t pid)
+{
+  struct list_elem *el;
+  struct thread *cur;
+
+  cur = thread_current ();
+  for (el = list_begin (&cur->children_ctx_list);
+       el != list_end (&cur->children_ctx_list); el = list_next (el))
+    {
+      struct process_context *ctx = list_entry (
+          el, struct process_context, child_ctx_elem);
+      if (ctx->pid == pid)
+        return ctx;
+    }
+  return NULL;
 }
 
 /* A thread function that loads a user process and starts it
