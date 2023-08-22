@@ -80,7 +80,7 @@ push_args (int argc, char **argv, void **sp)
   char *arg_ptr, *argv_last_arg_end, **arg_addr_ptr, ***argv_ptr;
   unsigned int arg_len;
   uintptr_t unaligned;
-  void (*return_ptr) (void);
+  void **return_ptr;
 
   /* Write arg strings stored in `argv`. */
   argv_last_arg_end = *sp;
@@ -129,6 +129,7 @@ push_args (int argc, char **argv, void **sp)
   /* Write dummy return address. */
   return_ptr = *sp;
   return_ptr--;
+  *return_ptr = 0;
   *sp = return_ptr;
 }
 
@@ -177,6 +178,7 @@ start_process (void *file_name_)
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load (prog_name, &if_.eip, &if_.esp);
   push_args (argc, argv, &if_.esp);
+  hex_dump ((uintptr_t)if_.esp, if_.esp, PHYS_BASE - if_.esp, true);
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
