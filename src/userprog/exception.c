@@ -1,6 +1,7 @@
 #include "userprog/exception.h"
 #include <inttypes.h>
 #include <stdio.h>
+#include "threads/vaddr.h"
 #include "userprog/gdt.h"
 #include "threads/interrupt.h"
 #include "threads/thread.h"
@@ -136,6 +137,18 @@ page_fault (struct intr_frame *f)
      (#PF)". */
   asm ("movl %%cr2, %0"
        : "=r"(fault_addr));
+
+  /* Handle page fault in userspace separately. Userspace page faults are
+     caused by invalid pointer passed to system calls. In this implementation,
+     userspace memory references are guarded by `copy_byte_(from|to)_user`, so
+     eax register should be set to 0xffffffff (-1) and return to the caller
+     on page fault. */
+  if (fault_addr < PHYS_BASE)
+    {
+      f->eip = (void (*) (void))f->eax;
+      f->eax = 0xffffffff;
+      return;
+    }
 
   /* Turn interrupts back on (they were only off so that we could
      be assured of reading CR2 before it changed). */
