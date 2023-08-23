@@ -10,6 +10,8 @@ int process_wait (tid_t);
 void process_exit (void);
 void process_activate (void);
 
+struct process_context *child_ctx_by_pid (tid_t pid);
+
 int copy_byte_from_user (const uint8_t *);
 bool copy_byte_to_user (uint8_t *, uint8_t);
 

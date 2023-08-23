@@ -20,7 +20,6 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 
-static struct process_context *child_ctx_by_pid (tid_t pid);
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
@@ -134,7 +133,7 @@ push_args (int argc, char **argv, void **sp)
 }
 
 /* Get the `process_ctx` of child process by using PID as key. */
-static struct process_context *
+struct process_context *
 child_ctx_by_pid (tid_t pid)
 {
   struct list_elem *el;
