@@ -1,10 +1,14 @@
 #include "userprog/syscall.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <syscall-nr.h>
 #include "devices/shutdown.h"
+#include "list.h"
 #include "threads/interrupt.h"
+#include "threads/palloc.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
+#include "threads/vaddr.h"
 #include "userprog/process.h"
 
 static void syscall_handler (struct intr_frame *);
@@ -92,11 +96,54 @@ syscall_exit (void *sp)
 static int
 syscall_exec (void *sp)
 {
-  const char *file;
+  const uint8_t *file;
+  char *copied, *copied_current;
+  int byte;
+  tid_t child_pid;
+  struct process_context *child_ctx;
 
-  pop_arg (const char *, file, sp);
-  printf ("SYS_EXEC(%s)\n", file);
-  return 0;
+  pop_arg (const uint8_t *, file, sp);
+
+  copied = palloc_get_page (PAL_ZERO);
+  copied_current = copied;
+  do
+    {
+      /* Check if we are copying from userspace. */
+      if ((void *)file >= PHYS_BASE)
+        goto fail_during_copy;
+
+      /* Copy a byte from userspace and check its validity. */
+      byte = copy_byte_from_user (file);
+      if (byte == -1)
+        goto fail_during_copy;
+
+      /* Copy the byte to the buffer. */
+      *copied_current = (char)byte;
+      file++;
+      copied_current++;
+    }
+  while (byte && (copied_current - copied) < PGSIZE);
+
+  /* Check if the copied string is properly NULL terminated. */
+  if ((copied_current - copied) == PGSIZE && byte != 0)
+    goto fail_during_copy;
+
+  child_pid = process_execute (copied);
+  palloc_free_page (copied);
+
+  child_ctx = child_ctx_by_pid (child_pid);
+
+  sema_down (&child_ctx->load_sema);
+  if (!child_ctx->load_success)
+    {
+      process_cleanup_ctx (child_ctx);
+      return TID_ERROR;
+    }
+  return child_pid;
+
+fail_during_copy:
+  palloc_free_page (copied);
+  return TID_ERROR;
 }
 
 /* System call handler for `WAIT`. */
