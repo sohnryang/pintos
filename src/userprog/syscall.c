@@ -11,6 +11,7 @@
 #include "threads/vaddr.h"
 #include "userprog/process.h"
 
+static void do_exit (int) NO_RETURN;
 static void syscall_handler (struct intr_frame *);
 static int syscall_halt (void *) NO_RETURN;
 static int syscall_exit (void *) NO_RETURN;
@@ -40,6 +41,16 @@ syscall_init (void)
     arg_ptr++;                 \
     SP = arg_ptr;              \
   })
+
+static void
+do_exit (int status)
+{
+  struct thread *cur;
+  cur = thread_current ();
+  cur->process_ctx->exit_code = status;
+  sema_up (&cur->process_ctx->exit_sema);
+  thread_exit ();
+}
 
 /* Handle system call. */
 static void
@@ -83,13 +94,9 @@ static int
 syscall_exit (void *sp)
 {
   int status;
-  struct thread *cur;
 
   pop_arg (int, status, sp);
-  cur = thread_current ();
-  cur->process_ctx->exit_code = status;
-  sema_up (&cur->process_ctx->exit_sema);
-  thread_exit ();
+  do_exit (status);
 }
 
 /* System call handler for `EXEC`. */
