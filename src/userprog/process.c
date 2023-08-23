@@ -219,8 +219,7 @@ process_wait (tid_t child_tid)
   sema_down (&child_ctx->exit_sema);
 
   exit_code = child_ctx->exit_code;
-  list_remove (&child_ctx->child_ctx_elem);
-  palloc_free_page (child_ctx);
+  process_cleanup_ctx (child_ctx);
   return exit_code;
 }
 
@@ -263,6 +262,14 @@ process_activate (void)
   /* Set thread's kernel stack for use in processing
      interrupts. */
   tss_update ();
+}
+
+/* Cleans up process context of child. */
+void
+process_cleanup_ctx (struct process_context *child_ctx)
+{
+  list_remove (&child_ctx->child_ctx_elem);
+  palloc_free_page (child_ctx);
 }
 
 /* We load ELF binaries.  The following definitions are taken
