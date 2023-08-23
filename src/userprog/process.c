@@ -213,6 +213,8 @@ int
 process_wait (tid_t child_tid)
 {
   struct process_context *child_ctx = child_ctx_by_pid (child_tid);
+  if (child_ctx == NULL)
+    return -1;
   int exit_code;
 
   sema_down (&child_ctx->exit_sema);
