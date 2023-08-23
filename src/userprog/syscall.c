@@ -150,7 +150,7 @@ syscall_exec (void *sp)
 
 fail_during_copy:
   palloc_free_page (copied);
-  return TID_ERROR;
+  do_exit (-1);
 }
 
 /* System call handler for `WAIT`. */
