@@ -5,6 +5,7 @@
 #include "userprog/gdt.h"
 #include "threads/interrupt.h"
 #include "threads/thread.h"
+#include "userprog/process.h"
 
 /* Number of page faults processed. */
 static long long page_fault_cnt;
@@ -138,18 +139,6 @@ page_fault (struct intr_frame *f)
   asm ("movl %%cr2, %0"
        : "=r"(fault_addr));
 
-  /* Handle page fault in userspace separately. Userspace page faults are
-     caused by invalid pointer passed to system calls. In this implementation,
-     userspace memory references are guarded by `copy_byte_(from|to)_user`, so
-     eax register should be set to 0xffffffff (-1) and return to the caller
-     on page fault. */
-  if (fault_addr < PHYS_BASE)
-    {
-      f->eip = (void (*) (void))f->eax;
-      f->eax = 0xffffffff;
-      return;
-    }
-
   /* Turn interrupts back on (they were only off so that we could
      be assured of reading CR2 before it changed). */
   intr_enable ();
@@ -161,6 +150,21 @@ page_fault (struct intr_frame *f)
   not_present = (f->error_code & PF_P) == 0;
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
+
+  /* Handle page fault caused by kernel code while accessing userspace
+     separately. Userspace page faults are caused by invalid pointer passed to
+     system calls. In this implementation, userspace memory references are
+     guarded by `copy_byte_(from|to)_user`, so eax register should be set to
+     0xffffffff (-1) and return to the caller on page fault. */
+  if (fault_addr < PHYS_BASE && !user)
+    {
+      f->eip = (void (*) (void))f->eax;
+      f->eax = 0xffffffff;
+      return;
+    }
+  /* In case of page faults caused by user code, terminate the process. */
+  else if (user)
+    process_trigger_exit (-1);
 
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
