@@ -646,3 +646,42 @@ copy_byte_to_user (uint8_t *udst, uint8_t byte)
        : "q"(byte));
   return error_code != -1;
 }
+
+/* Copy `n` bytes from `usrc` to `dst`. `usrc` must be pointing to userspace
+   memory. Returns `dst` on success, and NULL on failure. */
+void *
+memcpy_from_user (void *dst, const void *usrc, size_t n)
+{
+  uint8_t *dst_byte = dst;
+  const uint8_t *src_byte = usrc;
+  int byte;
+  for (size_t i = 0; i < n; i++)
+    {
+      byte = copy_byte_from_user (src_byte);
+      if (byte == -1)
+        return NULL;
+      *dst_byte = byte;
+      dst_byte++;
+      src_byte++;
+    }
+  return dst;
+}
+
+/* Copy `n` bytes from `src` to `udst`. `udst` must be pointing to userspace
+   memory. Returns `udst` on success, and NULL on failure. */
+void *
+memcpy_to_user (void *udst, const void *src, size_t n)
+{
+  uint8_t *dst_byte = udst;
+  const uint8_t *src_byte = src;
+  bool success;
+  for (size_t i = 0; i < n; i++)
+    {
+      success = copy_byte_to_user (dst_byte, *src_byte);
+      if (!success)
+        return NULL;
+      dst_byte++;
+      src_byte++;
+    }
+  return udst;
+}

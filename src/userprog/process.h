@@ -3,6 +3,7 @@
 
 #include "threads/thread.h"
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 tid_t process_execute (const char *file_name);
@@ -18,5 +19,8 @@ bool is_valid_user_ptr (const void *);
 
 int copy_byte_from_user (const uint8_t *);
 bool copy_byte_to_user (uint8_t *, uint8_t);
+
+void *memcpy_from_user (void *, const void *, size_t);
+void *memcpy_to_user (void *, const void *, size_t);
 
 #endif /* userprog/process.h */
