@@ -280,6 +280,7 @@ process_trigger_exit (int status)
   cur = thread_current ();
   cur->process_ctx->exit_code = status;
   sema_up (&cur->process_ctx->exit_sema);
+  printf ("%s: exit(%d)\n", cur->name, status);
   thread_exit ();
 }
 
