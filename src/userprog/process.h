@@ -16,6 +16,7 @@ void process_trigger_exit (int) NO_RETURN;
 struct process_context *child_ctx_by_pid (tid_t pid);
 
 bool is_valid_user_ptr (const void *);
+bool is_contained_in_user (const void *, size_t);
 
 int copy_byte_from_user (const uint8_t *);
 bool copy_byte_to_user (uint8_t *, uint8_t);

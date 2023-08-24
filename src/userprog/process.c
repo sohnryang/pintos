@@ -623,6 +623,12 @@ is_valid_user_ptr (const void *uaddr)
   return uaddr < PHYS_BASE;
 }
 
+bool
+is_contained_in_user (const void *uaddr, size_t n)
+{
+  return is_valid_user_ptr (uaddr) && is_valid_user_ptr ((const uint8_t *)uaddr + n - 1);
+}
+
 int
 copy_byte_from_user (const uint8_t *usrc)
 {
