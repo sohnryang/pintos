@@ -32,13 +32,18 @@ syscall_init (void)
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall\n");
 }
 
-#define pop_arg(TYPE, OUT, SP) \
-  ({                           \
-    TYPE *arg_ptr;             \
-    arg_ptr = (TYPE *)(SP);    \
-    OUT = *arg_ptr;            \
-    arg_ptr++;                 \
-    SP = arg_ptr;              \
+#define pop_arg(TYPE, OUT, SP)                             \
+  ({                                                       \
+    TYPE *arg_ptr;                                         \
+    void *dst;                                             \
+    arg_ptr = (TYPE *)(SP);                                \
+    if (!is_contained_in_user (arg_ptr, sizeof (TYPE)))    \
+      process_trigger_exit (-1);                           \
+    dst = memcpy_from_user (&OUT, arg_ptr, sizeof (TYPE)); \
+    if (dst == NULL)                                       \
+      process_trigger_exit (-1);                           \
+    arg_ptr++;                                             \
+    SP = arg_ptr;                                          \
   })
 
 /* Handle system call. */
