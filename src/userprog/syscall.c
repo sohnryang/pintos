@@ -231,7 +231,20 @@ syscall_write (void *sp)
   pop_arg (int, fd, sp);
   pop_arg (void *, buffer, sp);
   pop_arg (unsigned, length, sp);
-  printf ("SYS_WRITE(%d, %p, %u)\n", fd, buffer, length);
+
+  if (fd == 0)
+    process_trigger_exit (-1);
+  else if (fd == 1)
+    {
+      char *copied_buf;
+      copied_buf = palloc_get_page (0);
+      memcpy_from_user (copied_buf, buffer, length);
+      putbuf (copied_buf, length);
+      palloc_free_page (copied_buf);
+      return length;
+    }
+  else
+    printf ("SYS_WRITE(%d, %p, %u)\n", fd, buffer, length);
   return 0;
 }
 
