@@ -617,6 +617,12 @@ install_page (void *upage, void *kpage, bool writable)
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
 }
 
+bool
+is_valid_user_ptr (const void *uaddr)
+{
+  return uaddr < PHYS_BASE;
+}
+
 int
 copy_byte_from_user (const uint8_t *usrc)
 {
