@@ -272,6 +272,17 @@ process_cleanup_ctx (struct process_context *child_ctx)
   palloc_free_page (child_ctx);
 }
 
+/* Triggers exit of process. */
+void
+process_trigger_exit (int status)
+{
+  struct thread *cur;
+  cur = thread_current ();
+  cur->process_ctx->exit_code = status;
+  sema_up (&cur->process_ctx->exit_sema);
+  thread_exit ();
+}
+
 /* We load ELF binaries.  The following definitions are taken
    from the ELF specification, [ELF1], more-or-less verbatim.  */
 
