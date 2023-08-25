@@ -11,6 +11,8 @@
 #include "threads/vaddr.h"
 #include "userprog/process.h"
 
+#define WRITE_BUFSIZE 128
+
 static void syscall_handler (struct intr_frame *);
 static int syscall_halt (void *) NO_RETURN;
 static int syscall_exit (void *) NO_RETURN;
@@ -232,20 +234,35 @@ syscall_write (void *sp)
   pop_arg (void *, buffer, sp);
   pop_arg (unsigned, length, sp);
 
+  char *copied_buf;
+
   if (fd == 0)
     process_trigger_exit (-1);
   else if (fd == 1)
     {
-      char *copied_buf;
+      unsigned written, copy_len;
+      void *dst;
       copied_buf = palloc_get_page (0);
-      memcpy_from_user (copied_buf, buffer, length);
-      putbuf (copied_buf, length);
+      for (written = 0; written < length; written += WRITE_BUFSIZE)
+        {
+          copy_len = length - written < WRITE_BUFSIZE
+                         ? length - written
+                         : WRITE_BUFSIZE;
+          dst = memcpy_from_user (copied_buf, buffer + written, copy_len);
+          if (dst == NULL)
+            goto fail_during_copy;
+          putbuf (copied_buf, copy_len);
+        }
       palloc_free_page (copied_buf);
       return length;
     }
   else
     printf ("SYS_WRITE(%d, %p, %u)\n", fd, buffer, length);
   return 0;
+
+fail_during_copy:
+  palloc_free_page (copied_buf);
+  process_trigger_exit (-1);
 }
 
 /* System call handler for `SEEK`. */
