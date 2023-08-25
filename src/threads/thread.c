@@ -69,6 +69,11 @@ static unsigned thread_ticks; /* # of timer ticks since last yield. */
    Controlled by kernel command-line option "-o mlfqs". */
 bool thread_mlfqs;
 
+#ifdef USERPROG
+/* Lock used for synchronization of file system. */
+static struct lock fs_lock;
+#endif
+
 static void kernel_thread (thread_func *, void *aux);
 
 static void idle (void *aux UNUSED);
@@ -100,6 +105,7 @@ thread_init (void)
   ASSERT (intr_get_level () == INTR_OFF);
 
   lock_init (&tid_lock);
+  lock_init (&fs_lock);
   list_init (&ready_list);
   list_init (&all_list);
   list_init (&sleep_list);
@@ -613,6 +619,22 @@ thread_get_recent_cpu (void)
   return fixed_to_int_round (fixed_mul_by_int (thread_current ()->recent_cpu,
                                                100));
 }
+
+#ifdef USERPROG
+/* Acquires the file system lock. */
+void
+thread_acquire_fs_lock (void)
+{
+  lock_acquire (&fs_lock);
+}
+
+/* Releases the file system lock. */
+void
+thread_release_fs_lock (void)
+{
+  lock_release (&fs_lock);
+}
+#endif
 
 /* Idle thread.  Executes when no other thread is ready to run.
 

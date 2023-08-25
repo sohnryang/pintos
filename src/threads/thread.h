@@ -185,4 +185,9 @@ void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
+#ifdef USERPROG
+void thread_acquire_fs_lock (void);
+void thread_release_fs_lock (void);
+#endif
+
 #endif /* threads/thread.h */
