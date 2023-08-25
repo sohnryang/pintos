@@ -373,6 +373,9 @@ load (const char *file_name, void (**eip) (void), void **esp)
     goto done;
   process_activate ();
 
+  /* Acquire file system lock. */
+  thread_acquire_fs_lock ();
+
   /* Open executable file. */
   file = filesys_open (file_name);
   if (file == NULL)
@@ -452,6 +455,9 @@ load (const char *file_name, void (**eip) (void), void **esp)
           break;
         }
     }
+
+  /* Release file system lock. */
+  thread_release_fs_lock ();
 
   /* Set up stack. */
   if (!setup_stack (esp))
