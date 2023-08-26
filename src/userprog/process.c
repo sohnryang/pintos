@@ -134,7 +134,7 @@ push_args (int argc, char **argv, void **sp)
 
 /* Get the `process_ctx` of child process by using PID as key. */
 struct process_context *
-child_ctx_by_pid (tid_t pid)
+process_child_ctx_by_pid (tid_t pid)
 {
   struct list_elem *el;
   struct thread *cur;
@@ -210,7 +210,7 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid)
 {
-  struct process_context *child_ctx = child_ctx_by_pid (child_tid);
+  struct process_context *child_ctx = process_child_ctx_by_pid (child_tid);
   if (child_ctx == NULL)
     return -1;
   int exit_code;

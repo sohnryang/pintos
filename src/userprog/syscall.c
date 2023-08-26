@@ -134,7 +134,7 @@ syscall_exec (void *sp)
   child_pid = process_execute (copied);
   palloc_free_page (copied);
 
-  child_ctx = child_ctx_by_pid (child_pid);
+  child_ctx = process_child_ctx_by_pid (child_pid);
 
   sema_down (&child_ctx->load_sema);
   if (!child_ctx->load_success)

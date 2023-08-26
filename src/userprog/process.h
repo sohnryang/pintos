@@ -13,7 +13,7 @@ void process_activate (void);
 void process_cleanup_ctx (struct process_context *);
 void process_trigger_exit (int) NO_RETURN;
 
-struct process_context *child_ctx_by_pid (tid_t pid);
+struct process_context *process_child_ctx_by_pid (tid_t pid);
 
 bool is_valid_user_ptr (const void *);
 bool is_contained_in_user (const void *, size_t);
