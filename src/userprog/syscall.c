@@ -234,11 +234,16 @@ syscall_write (void *sp)
   pop_arg (void *, buffer, sp);
   pop_arg (unsigned, length, sp);
 
+  struct fd_context *fd_ctx;
   char *copied_buf;
 
-  if (fd == 0)
+  fd_ctx = process_get_fd_ctx (fd);
+  if (fd_ctx == NULL)
     process_trigger_exit (-1);
-  else if (fd == 1)
+
+  if (fd_ctx->keyboard_in)
+    process_trigger_exit (-1);
+  else if (fd_ctx->screen_out)
     {
       unsigned written, copy_len;
       void *dst;
