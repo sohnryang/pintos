@@ -227,13 +227,13 @@ process_init_fd_ctx (void)
 
   cur = thread_current ();
 
-  stdin_ctx = palloc_get_page (0);
+  stdin_ctx = palloc_get_page (PAL_ZERO);
   stdin_ctx->fd = 0;
   stdin_ctx->file = NULL;
   stdin_ctx->keyboard_in = true;
   list_push_back (&cur->process_ctx->fd_ctx_list, &stdin_ctx->elem);
 
-  stdout_ctx = palloc_get_page (0);
+  stdout_ctx = palloc_get_page (PAL_ZERO);
   stdout_ctx->fd = 1;
   stdout_ctx->file = NULL;
   stdout_ctx->screen_out = true;
