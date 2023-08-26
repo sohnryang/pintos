@@ -22,6 +22,7 @@
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
+static void process_init_fd_ctx (void);
 
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
@@ -185,6 +186,8 @@ start_process (void *file_name_)
   if (!success)
     thread_exit ();
 
+  process_init_fd_ctx ();
+
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
      threads/intr-stubs.S).  Because intr_exit takes all of its
@@ -196,6 +199,27 @@ start_process (void *file_name_)
                 : "g"(&if_)
                 : "memory");
   NOT_REACHED ();
+}
+
+static void
+process_init_fd_ctx (void)
+{
+  struct thread *cur;
+  struct fd_context *stdin_ctx, *stdout_ctx;
+
+  cur = thread_current ();
+
+  stdin_ctx = palloc_get_page (0);
+  stdin_ctx->fd = 0;
+  stdin_ctx->file = NULL;
+  stdin_ctx->keyboard_in = true;
+  list_push_back (&cur->process_ctx->fd_ctx_list, &stdin_ctx->elem);
+
+  stdout_ctx = palloc_get_page (0);
+  stdout_ctx->fd = 1;
+  stdout_ctx->file = NULL;
+  stdout_ctx->screen_out = true;
+  list_push_back (&cur->process_ctx->fd_ctx_list, &stdout_ctx->elem);
 }
 
 /* Waits for thread TID to die and returns its exit status.  If
