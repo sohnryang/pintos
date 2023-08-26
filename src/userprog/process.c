@@ -152,6 +152,24 @@ process_child_ctx_by_pid (tid_t pid)
   return NULL;
 }
 
+/* Get `fd_context` of current process by using fd as key. */
+struct fd_context *
+process_get_fd_ctx (int fd)
+{
+  struct list_elem *el;
+  struct thread *cur;
+
+  cur = thread_current ();
+  for (el = list_begin (&cur->process_ctx->fd_ctx_list);
+       el != list_end (&cur->process_ctx->fd_ctx_list); el = list_next (el))
+    {
+      struct fd_context *ctx = list_entry (el, struct fd_context, elem);
+      if (ctx->fd == fd)
+        return ctx;
+    }
+  return NULL;
+}
+
 /* A thread function that loads a user process and starts it
    running. */
 static void
@@ -251,7 +269,18 @@ void
 process_exit (void)
 {
   struct thread *cur = thread_current ();
+  struct list_elem *el;
   uint32_t *pd;
+
+  while (!list_empty (&cur->process_ctx->fd_ctx_list))
+    {
+      struct fd_context *fd_ctx;
+      el = list_pop_front (&cur->process_ctx->fd_ctx_list);
+      fd_ctx = list_entry (el, struct fd_context, elem);
+      if (fd_ctx->file != NULL)
+        ; /* TODO: free if the fd is for real file. */
+      palloc_free_page (fd_ctx);
+    }
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
