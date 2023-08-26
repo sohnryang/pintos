@@ -3,6 +3,7 @@
 
 #include "threads/fixed_arith.h"
 #include "threads/synch.h"
+#include "filesys/file.h"
 
 #include <debug.h>
 #include <list.h>
@@ -28,6 +29,17 @@ typedef int tid_t;
 #define PRI_MAX 63     /* Highest priority. */
 
 #ifdef USERPROG
+/* Context of file descriptor. */
+struct fd_context
+{
+  int fd;                /* File descriptor number. */
+  struct file *file;     /* Opened file object. */
+  struct list_elem elem; /* List element for `fd_ctx_list`. */
+
+  bool screen_out;  /* Is this fd connected to screen output? */
+  bool keyboard_in; /* Is this fd connected to keyboard input? */
+};
+
 /* Context of user process. */
 struct process_context
 {
@@ -40,6 +52,8 @@ struct process_context
   struct semaphore load_sema; /* Condition variable for determining loading. */
 
   struct list_elem child_ctx_elem; /* List element for `children_ctx_list`. */
+
+  struct list fd_ctx_list; /* List of open file descriptors. */
 };
 #endif
 
