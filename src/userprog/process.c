@@ -177,7 +177,6 @@ start_process (void *file_name_)
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load (prog_name, &if_.eip, &if_.esp);
   push_args (argc, argv, &if_.esp);
-  hex_dump ((uintptr_t)if_.esp, if_.esp, PHYS_BASE - if_.esp, true);
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
