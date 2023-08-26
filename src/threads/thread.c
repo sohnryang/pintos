@@ -226,6 +226,7 @@ thread_create (const char *name, int priority,
   t->process_ctx->pid = tid;
   sema_init (&t->process_ctx->exit_sema, 0);
   sema_init (&t->process_ctx->load_sema, 0);
+  list_init (&t->process_ctx->fd_ctx_list);
 
   /* Add child info to parent's `children_ctx_list`. */
   cur = thread_current ();
