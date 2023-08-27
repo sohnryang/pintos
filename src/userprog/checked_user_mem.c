@@ -1,0 +1,133 @@
+#include "checked_user_mem.h"
+
+#include <stdbool.h>
+#include "threads/vaddr.h"
+
+static bool
+is_valid_user_ptr (const void *uaddr)
+{
+  return uaddr < PHYS_BASE;
+}
+
+static bool
+is_contained_in_user (const void *uaddr, size_t n)
+{
+  return is_valid_user_ptr (uaddr) && is_valid_user_ptr ((const uint8_t *)uaddr + n - 1);
+}
+
+int
+checked_copy_byte_from_user (const uint8_t *usrc)
+{
+  int res;
+
+  if (!is_valid_user_ptr (usrc))
+    return -1;
+
+  asm ("movl $1f, %0\n\t"
+       "movzbl %1, %0\n\t"
+       "1:"
+       : "=&a"(res)
+       : "m"(*usrc));
+  return res;
+}
+
+bool
+checked_copy_byte_to_user (uint8_t *udst, uint8_t byte)
+{
+  int error_code;
+
+  if (!is_valid_user_ptr (udst))
+    return false;
+
+  asm ("movl $1f, %0\n\t"
+       "movb %b2, %1\n\t"
+       "1:"
+       : "=&a"(error_code), "=m"(*udst)
+       : "q"(byte));
+  return error_code != -1;
+}
+
+void *
+checked_memcpy_from_user (void *dst, const void *usrc, size_t n)
+{
+  uint8_t *dst_byte = dst;
+  const uint8_t *src_byte = usrc;
+  int byte;
+
+  if (!is_contained_in_user (usrc, n))
+    return NULL;
+
+  for (size_t i = 0; i < n; i++)
+    {
+      byte = checked_copy_byte_from_user (src_byte);
+      if (byte == -1)
+        return NULL;
+      *dst_byte = byte;
+      dst_byte++;
+      src_byte++;
+    }
+  return dst;
+}
+
+void *
+checked_memcpy_to_user (void *udst, const void *src, size_t n)
+{
+  uint8_t *dst_byte = udst;
+  const uint8_t *src_byte = src;
+  bool success;
+
+  if (!is_contained_in_user (udst, n))
+    return NULL;
+
+  for (size_t i = 0; i < n; i++)
+    {
+      success = checked_copy_byte_to_user (dst_byte, *src_byte);
+      if (!success)
+        return NULL;
+      dst_byte++;
+      src_byte++;
+    }
+  return udst;
+}
+
+size_t
+checked_strlen (const char *string)
+{
+  const char *p;
+  int byte;
+
+  ASSERT (string != NULL);
+
+  for (p = string;
+       (byte = checked_copy_byte_from_user ((const void *)p)) != '\0'; p++)
+    {
+      if (byte == -1)
+        return 0;
+      continue;
+    }
+  return p - string;
+}
+
+size_t
+checked_strlcpy_from_user (char *dst, const char *usrc, size_t size)
+{
+  size_t src_len;
+  void *res;
+
+  ASSERT (dst != NULL);
+  ASSERT (usrc != NULL);
+
+  src_len = checked_strlen (usrc);
+  if (size > 0)
+    {
+      size_t dst_len = size - 1;
+      if (src_len < dst_len)
+        dst_len = src_len;
+      res = checked_memcpy_from_user (dst, usrc, dst_len);
+
+      if (res == NULL)
+        return 0;
+      dst[dst_len] = '\0';
+    }
+  return src_len;
+}
