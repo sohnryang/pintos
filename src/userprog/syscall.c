@@ -67,10 +67,13 @@ syscall_handler (struct intr_frame *f)
     syscall_tell,
     syscall_close,
   };
-  void *sp = f->esp;
+  void *sp = f->esp, *res;
 
   syscall_id_ptr = sp;
-  syscall_id = *syscall_id_ptr;
+  res = checked_memcpy_from_user (&syscall_id, syscall_id_ptr,
+                                  sizeof syscall_id);
+  if (!res)
+    process_trigger_exit (-1);
   syscall_id_ptr++;
   sp = syscall_id_ptr;
 
