@@ -272,8 +272,7 @@ process_exit (void)
       struct fd_context *fd_ctx;
       el = list_front (&cur->process_ctx->fd_ctx_list);
       fd_ctx = list_entry (el, struct fd_context, elem);
-      if (fd_ctx->file != NULL)
-        ; /* TODO: free if the fd is for real file. */
+      file_close (fd_ctx->file);
       process_remove_fd_ctx (fd_ctx);
     }
 
