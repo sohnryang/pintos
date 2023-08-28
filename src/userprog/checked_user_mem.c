@@ -47,6 +47,8 @@ checked_copy_byte_to_user (uint8_t *udst, uint8_t byte)
   return error_code != -1;
 }
 
+/* Copy `n` bytes from `usrc` to `dst`. `usrc` must be pointing to userspace
+   memory. Returns `dst` on success, and NULL on failure. */
 void *
 checked_memcpy_from_user (void *dst, const void *usrc, size_t n)
 {
@@ -69,6 +71,8 @@ checked_memcpy_from_user (void *dst, const void *usrc, size_t n)
   return dst;
 }
 
+/* Copy `n` bytes from `src` to `udst`. `udst` must be pointing to userspace
+   memory. Returns `udst` on success, and NULL on failure. */
 void *
 checked_memcpy_to_user (void *udst, const void *src, size_t n)
 {
@@ -90,6 +94,7 @@ checked_memcpy_to_user (void *udst, const void *src, size_t n)
   return udst;
 }
 
+/* Calculate length of the given `string`. */
 size_t
 checked_strlen (const char *string)
 {
@@ -108,6 +113,8 @@ checked_strlen (const char *string)
   return p - string;
 }
 
+/* Copy NULL terminated string from `usrc` to `dst`. Returns copied length on
+   success. Copies at most `size` bytes. */
 size_t
 checked_strlcpy_from_user (char *dst, const char *usrc, size_t size)
 {
