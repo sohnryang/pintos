@@ -227,22 +227,12 @@ start_process (void *file_name_)
 static void
 process_init_fd_ctx (void)
 {
-  struct thread *cur;
   struct fd_context *stdin_ctx, *stdout_ctx;
 
-  cur = thread_current ();
-
-  stdin_ctx = palloc_get_page (PAL_ZERO);
-  stdin_ctx->fd = 0;
-  stdin_ctx->file = NULL;
+  stdin_ctx = process_create_fd_ctx ();
   stdin_ctx->keyboard_in = true;
-  list_push_back (&cur->process_ctx->fd_ctx_list, &stdin_ctx->elem);
-
-  stdout_ctx = palloc_get_page (PAL_ZERO);
-  stdout_ctx->fd = 1;
-  stdout_ctx->file = NULL;
+  stdout_ctx = process_create_fd_ctx ();
   stdout_ctx->screen_out = true;
-  list_push_back (&cur->process_ctx->fd_ctx_list, &stdout_ctx->elem);
 }
 
 /* Waits for thread TID to die and returns its exit status.  If
@@ -280,11 +270,11 @@ process_exit (void)
   while (!list_empty (&cur->process_ctx->fd_ctx_list))
     {
       struct fd_context *fd_ctx;
-      el = list_pop_front (&cur->process_ctx->fd_ctx_list);
+      el = list_front (&cur->process_ctx->fd_ctx_list);
       fd_ctx = list_entry (el, struct fd_context, elem);
       if (fd_ctx->file != NULL)
         ; /* TODO: free if the fd is for real file. */
-      palloc_free_page (fd_ctx);
+      process_remove_fd_ctx (fd_ctx);
     }
 
   /* Destroy the current process's page directory and switch back
