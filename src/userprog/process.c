@@ -341,6 +341,62 @@ process_trigger_exit (int status)
   thread_exit ();
 }
 
+/* Create and add a `fd_context` node to the file descriptor list of this
+   process.
+   Note: this function only creates `fd_context` node in current process's
+   `fd_ctx_list` and do nothing else. Other init tasks, setting up stdout or
+   stdin, and linking this node to real file in filesystem are caller's
+   responsibility. */
+struct fd_context *
+process_create_fd_ctx (void)
+{
+  struct thread *cur;
+  struct list_elem *el;
+  struct fd_context *fd_current, *fd_prev, *fd_new;
+  int fd_prev_num;
+
+  cur = thread_current ();
+  /* Use `PAL_ZERO` so that we don't have to zero-fill bunch of fields. */
+  fd_new = palloc_get_page (PAL_ZERO);
+
+  if (list_empty (&cur->process_ctx->fd_ctx_list))
+    {
+      list_push_back (&cur->process_ctx->fd_ctx_list, &fd_new->elem);
+      return fd_new;
+    }
+
+  fd_prev = NULL;
+  for (el = list_begin (&cur->process_ctx->fd_ctx_list);
+       el != list_end (&cur->process_ctx->fd_ctx_list); el = list_next (el))
+    {
+      fd_current = list_entry (el, struct fd_context, elem);
+      fd_prev_num = fd_prev != NULL ? fd_prev->fd : 0;
+      if (fd_prev_num < fd_current->fd - 1)
+        {
+          fd_new->fd = fd_current->fd - 1;
+          list_insert (el, &fd_new->elem);
+          return fd_new;
+        }
+      fd_prev = fd_current;
+    }
+  el = list_back (&cur->process_ctx->fd_ctx_list);
+  fd_current = list_entry (el, struct fd_context, elem);
+  fd_new->fd = fd_current->fd + 1;
+  list_push_back (&cur->process_ctx->fd_ctx_list, &fd_new->elem);
+  return fd_new;
+}
+
+/* Remove `fd_context` node from the file descriptor list of this process.
+   Note: like `process_create_fd_ctx`, this function only removes `fd_ctx` from
+   `fd_ctx_list` of the current process and frees the node. Other cleanup
+   tasks, such as closing files in filesystem are caller's responsibility. */
+void
+process_remove_fd_ctx (struct fd_context *fd_ctx)
+{
+  list_remove (&fd_ctx->elem);
+  palloc_free_page (fd_ctx);
+}
+
 /* We load ELF binaries.  The following definitions are taken
    from the ELF specification, [ELF1], more-or-less verbatim.  */
 
