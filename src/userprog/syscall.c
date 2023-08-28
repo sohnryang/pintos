@@ -9,6 +9,7 @@
 #include "threads/synch.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "userprog/checked_user_mem.h"
 #include "userprog/process.h"
 
 #define WRITE_BUFSIZE 128
@@ -34,18 +35,16 @@ syscall_init (void)
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall\n");
 }
 
-#define pop_arg(TYPE, OUT, SP)                             \
-  ({                                                       \
-    TYPE *arg_ptr;                                         \
-    void *dst;                                             \
-    arg_ptr = (TYPE *)(SP);                                \
-    if (!is_contained_in_user (arg_ptr, sizeof (TYPE)))    \
-      process_trigger_exit (-1);                           \
-    dst = memcpy_from_user (&OUT, arg_ptr, sizeof (TYPE)); \
-    if (dst == NULL)                                       \
-      process_trigger_exit (-1);                           \
-    arg_ptr++;                                             \
-    SP = arg_ptr;                                          \
+#define pop_arg(TYPE, OUT, SP)                                     \
+  ({                                                               \
+    TYPE *arg_ptr;                                                 \
+    void *dst;                                                     \
+    arg_ptr = (TYPE *)(SP);                                        \
+    dst = checked_memcpy_from_user (&OUT, arg_ptr, sizeof (TYPE)); \
+    if (dst == NULL)                                               \
+      process_trigger_exit (-1);                                   \
+    arg_ptr++;                                                     \
+    SP = arg_ptr;                                                  \
   })
 
 /* Handle system call. */
@@ -100,36 +99,20 @@ static int
 syscall_exec (void *sp)
 {
   const uint8_t *file;
-  char *copied, *copied_current;
-  int byte;
+  char *copied;
   tid_t child_pid;
+  int res;
   struct process_context *child_ctx;
 
   pop_arg (const uint8_t *, file, sp);
 
   copied = palloc_get_page (PAL_ZERO);
-  copied_current = copied;
-  do
+  res = checked_strlcpy_from_user (copied, (void *)file, PGSIZE);
+  if (res == -1)
     {
-      /* Check if we are copying from userspace. */
-      if ((void *)file >= PHYS_BASE)
-        goto fail_during_copy;
-
-      /* Copy a byte from userspace and check its validity. */
-      byte = copy_byte_from_user (file);
-      if (byte == -1)
-        goto fail_during_copy;
-
-      /* Copy the byte to the buffer. */
-      *copied_current = (char)byte;
-      file++;
-      copied_current++;
+      palloc_free_page (copied);
+      process_trigger_exit (-1);
     }
-  while (byte && (copied_current - copied) < PGSIZE);
-
-  /* Check if the copied string is properly NULL terminated. */
-  if ((copied_current - copied) == PGSIZE && byte != 0)
-    goto fail_during_copy;
 
   child_pid = process_execute (copied);
   palloc_free_page (copied);
@@ -143,10 +126,6 @@ syscall_exec (void *sp)
       return TID_ERROR;
     }
   return child_pid;
-
-fail_during_copy:
-  palloc_free_page (copied);
-  process_trigger_exit (-1);
 }
 
 /* System call handler for `WAIT`. */
@@ -236,6 +215,8 @@ syscall_write (void *sp)
 
   struct fd_context *fd_ctx;
   char *copied_buf;
+  unsigned written, copy_len;
+  void *dst;
 
   fd_ctx = process_get_fd_ctx (fd);
   if (fd_ctx == NULL)
@@ -245,15 +226,14 @@ syscall_write (void *sp)
     process_trigger_exit (-1);
   else if (fd_ctx->screen_out)
     {
-      unsigned written, copy_len;
-      void *dst;
       copied_buf = palloc_get_page (0);
       for (written = 0; written < length; written += WRITE_BUFSIZE)
         {
           copy_len = length - written < WRITE_BUFSIZE
                          ? length - written
                          : WRITE_BUFSIZE;
-          dst = memcpy_from_user (copied_buf, buffer + written, copy_len);
+          dst = checked_memcpy_from_user (copied_buf, buffer + written,
+                                          copy_len);
           if (dst == NULL)
             goto fail_during_copy;
           putbuf (copied_buf, copy_len);

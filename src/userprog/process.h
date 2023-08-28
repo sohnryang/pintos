@@ -16,13 +16,4 @@ void process_trigger_exit (int) NO_RETURN;
 struct process_context *process_child_ctx_by_pid (tid_t);
 struct fd_context *process_get_fd_ctx (int);
 
-bool is_valid_user_ptr (const void *);
-bool is_contained_in_user (const void *, size_t);
-
-int copy_byte_from_user (const uint8_t *);
-bool copy_byte_to_user (uint8_t *, uint8_t);
-
-void *memcpy_from_user (void *, const void *, size_t);
-void *memcpy_to_user (void *, const void *, size_t);
-
 #endif /* userprog/process.h */
