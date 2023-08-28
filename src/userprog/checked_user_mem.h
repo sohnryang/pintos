@@ -10,7 +10,7 @@ bool checked_copy_byte_to_user (uint8_t *, uint8_t);
 
 void *checked_memcpy_from_user (void *, const void *, size_t);
 void *checked_memcpy_to_user (void *, const void *, size_t);
-size_t checked_strlen (const char *);
-size_t checked_strlcpy_from_user (char *, const char *, size_t);
+int checked_strlen (const char *);
+int checked_strlcpy_from_user (char *, const char *, size_t);
 
 #endif

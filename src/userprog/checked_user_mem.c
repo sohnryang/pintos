@@ -94,8 +94,10 @@ checked_memcpy_to_user (void *udst, const void *src, size_t n)
   return udst;
 }
 
-/* Calculate length of the given `string`. */
-size_t
+/* Calculate length of the given `string`. Returns -1 on error.
+   Note: this function works on strings whose lengths are bounded by maximum
+   value of 32-bit integer. */
+int
 checked_strlen (const char *string)
 {
   const char *p;
@@ -107,28 +109,32 @@ checked_strlen (const char *string)
        (byte = checked_copy_byte_from_user ((const void *)p)) != '\0'; p++)
     {
       if (byte == -1)
-        return 0;
+        return -1;
       continue;
     }
   return p - string;
 }
 
 /* Copy NULL terminated string from `usrc` to `dst`. Returns copied length on
-   success. Copies at most `size` bytes. */
-size_t
+   success, and -1 on failure. Copies at most `size` bytes.
+   Note: this function works on strings whose lengths are bounded by maximum
+   value of 32-bit integer. */
+int
 checked_strlcpy_from_user (char *dst, const char *usrc, size_t size)
 {
-  size_t src_len;
+  int src_len;
   void *res;
 
   ASSERT (dst != NULL);
   ASSERT (usrc != NULL);
 
   src_len = checked_strlen (usrc);
+  if (src_len == -1)
+    return -1;
   if (size > 0)
     {
       size_t dst_len = size - 1;
-      if (src_len < dst_len)
+      if ((size_t)src_len < dst_len)
         dst_len = src_len;
       res = checked_memcpy_from_user (dst, usrc, dst_len);
 
