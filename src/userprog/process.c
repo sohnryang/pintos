@@ -195,15 +195,20 @@ start_process (void *file_name_)
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load (prog_name, &if_.eip, &if_.esp);
-  push_args (argc, argv, &if_.esp);
 
-  /* If load failed, quit. */
+  /* If load failed, free buffers and quit. */
+  if (!success)
+    {
+      palloc_free_page (file_name);
+      palloc_free_page (argv);
+      palloc_free_page (file_name_copy_orig);
+      thread_exit ();
+    }
+
+  push_args (argc, argv, &if_.esp);
   palloc_free_page (file_name);
   palloc_free_page (argv);
   palloc_free_page (file_name_copy_orig);
-  if (!success)
-    thread_exit ();
-
   process_init_fd_ctx ();
 
   /* Start the user process by simulating a return from an
