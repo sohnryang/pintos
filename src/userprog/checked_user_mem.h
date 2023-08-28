@@ -5,9 +5,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-static bool is_valid_user_ptr (const void *);
-static bool is_contained_in_user (const void *, size_t);
-
 int checked_copy_byte_from_user (const uint8_t *);
 bool checked_copy_byte_to_user (uint8_t *, uint8_t);
 
