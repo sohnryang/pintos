@@ -255,9 +255,28 @@ syscall_write (void *sp)
       palloc_free_page (copied_buf);
       return length;
     }
-  else
-    printf ("SYS_WRITE(%d, %p, %u)\n", fd, buffer, length);
-  return 0;
+
+  if (fd_ctx->file == NULL)
+    process_trigger_exit (-1);
+
+  copied_buf = palloc_get_page (0);
+  off_t file_written = 0;
+
+  thread_acquire_fs_lock ();
+  for (written = 0; written < length; written += WRITE_BUFSIZE)
+    {
+      copy_len = length - written < WRITE_BUFSIZE
+                     ? length - written
+                     : WRITE_BUFSIZE;
+      dst = checked_memcpy_from_user (copied_buf, buffer + written,
+                                      copy_len);
+      if (dst == NULL)
+        goto fail_during_copy;
+      file_written += file_write (fd_ctx->file, copied_buf, copy_len);
+    }
+  palloc_free_page (copied_buf);
+  thread_release_fs_lock ();
+  return file_written;
 
 fail_during_copy:
   palloc_free_page (copied_buf);
