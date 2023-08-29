@@ -103,8 +103,6 @@ checked_strlen (const char *string)
   const char *p;
   int byte;
 
-  ASSERT (string != NULL);
-
   for (p = string;
        (byte = checked_copy_byte_from_user ((const void *)p)) != '\0'; p++)
     {
@@ -126,7 +124,6 @@ checked_strlcpy_from_user (char *dst, const char *usrc, size_t size)
   void *res;
 
   ASSERT (dst != NULL);
-  ASSERT (usrc != NULL);
 
   src_len = checked_strlen (usrc);
   if (src_len == -1)
