@@ -174,15 +174,22 @@ static int
 syscall_open (void *sp)
 {
   const char *file;
+  char *copied_filename;
+  int res;
   struct fd_context *fd_ctx;
 
   pop_arg (const char *, file, sp);
+
+  copied_filename = palloc_get_page (0);
+  res = checked_strlcpy_from_user (copied_filename, file, PGSIZE);
+  if (res == -1)
+    process_trigger_exit (-1);
 
   fd_ctx = process_create_fd_ctx ();
   if (fd_ctx == NULL)
     return -1;
 
-  fd_ctx->file = filesys_open (file);
+  fd_ctx->file = filesys_open (copied_filename);
   if (fd_ctx->file == NULL)
     return -1;
 
