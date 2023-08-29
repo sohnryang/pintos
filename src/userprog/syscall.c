@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <syscall-nr.h>
 #include "devices/shutdown.h"
+#include "filesys/file.h"
 #include "filesys/filesys.h"
 #include "list.h"
 #include "threads/interrupt.h"
@@ -292,8 +293,15 @@ static int
 syscall_close (void *sp)
 {
   int fd;
+  struct fd_context *fd_ctx;
 
   pop_arg (int, fd, sp);
-  printf ("SYS_CLOSE(%d)\n", fd);
+
+  fd_ctx = process_get_fd_ctx (fd);
+  if (fd_ctx == NULL)
+    return -1;
+
+  file_close (fd_ctx->file);
+  process_remove_fd_ctx (fd_ctx);
   return 0;
 }
