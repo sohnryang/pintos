@@ -53,7 +53,7 @@ syscall_init (void)
 static void
 syscall_handler (struct intr_frame *f)
 {
-  int syscall_id, *syscall_id_ptr;
+  int syscall_id;
   int (*syscall_table[13]) (void *) = {
     syscall_halt,
     syscall_exit,
@@ -69,15 +69,9 @@ syscall_handler (struct intr_frame *f)
     syscall_tell,
     syscall_close,
   };
-  void *sp = f->esp, *res;
+  void *sp = f->esp;
 
-  syscall_id_ptr = sp;
-  res = checked_memcpy_from_user (&syscall_id, syscall_id_ptr,
-                                  sizeof syscall_id);
-  if (!res)
-    process_trigger_exit (-1);
-  syscall_id_ptr++;
-  sp = syscall_id_ptr;
+  pop_arg (int, syscall_id, sp);
 
   f->eax = syscall_table[syscall_id](sp);
 }
