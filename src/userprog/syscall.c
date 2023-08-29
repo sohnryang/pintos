@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <syscall-nr.h>
 #include "devices/shutdown.h"
+#include "filesys/filesys.h"
 #include "list.h"
 #include "threads/interrupt.h"
 #include "threads/palloc.h"
@@ -172,10 +173,19 @@ static int
 syscall_open (void *sp)
 {
   const char *file;
+  struct fd_context *fd_ctx;
 
   pop_arg (const char *, file, sp);
-  printf ("SYS_OPEN(%s)\n", file);
-  return 0;
+
+  fd_ctx = process_create_fd_ctx ();
+  if (fd_ctx == NULL)
+    return -1;
+
+  fd_ctx->file = filesys_open (file);
+  if (fd_ctx->file == NULL)
+    return -1;
+
+  return fd_ctx->fd;
 }
 
 /* System call handler for `FILESIZE`. */
