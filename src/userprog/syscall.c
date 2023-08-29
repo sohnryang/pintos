@@ -145,11 +145,20 @@ syscall_create (void *sp)
 {
   const char *file;
   unsigned initial_size;
+  char *copied_filename;
+  int res;
 
   pop_arg (const char *, file, sp);
   pop_arg (unsigned, initial_size, sp);
-  printf ("SYS_CREATE(%s, %u)\n", file, initial_size);
-  return 0;
+
+  copied_filename = palloc_get_page (0);
+  res = checked_strlcpy_from_user (copied_filename, file, PGSIZE);
+  if (res == -1)
+    process_trigger_exit (-1);
+  if (res == 0)
+    return false;
+
+  return filesys_create (copied_filename, initial_size);
 }
 
 /* System call handler for `REMOVE`. */
