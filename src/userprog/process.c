@@ -276,6 +276,8 @@ process_exit (void)
       file_close (fd_ctx->file);
       process_remove_fd_ctx (fd_ctx);
     }
+  if (cur->process_ctx->exe_file != NULL)
+    file_allow_write (cur->process_ctx->exe_file);
   file_close (cur->process_ctx->exe_file);
   thread_release_fs_lock ();
 
@@ -488,6 +490,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
       printf ("load: %s: open failed\n", file_name);
       goto done;
     }
+  file_deny_write (file);
 
   /* Read and verify executable header. */
   if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
