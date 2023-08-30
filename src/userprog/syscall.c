@@ -324,10 +324,15 @@ static int
 syscall_tell (void *sp)
 {
   int fd;
+  struct fd_context *fd_ctx;
 
   pop_arg (int, fd, sp);
-  printf ("SYS_TELL(%d)\n", fd);
-  return 0;
+
+  fd_ctx = process_get_fd_ctx (fd);
+  if (fd_ctx == NULL || fd_ctx->file == NULL)
+    process_trigger_exit (-1);
+
+  return file_tell (fd_ctx->file);
 }
 
 /* System call handler for `CLOSE`. */
