@@ -147,6 +147,7 @@ syscall_create (void *sp)
   unsigned initial_size;
   char *copied_filename;
   int res;
+  bool success;
 
   pop_arg (const char *, file, sp);
   pop_arg (unsigned, initial_size, sp);
@@ -154,11 +155,19 @@ syscall_create (void *sp)
   copied_filename = palloc_get_page (0);
   res = checked_strlcpy_from_user (copied_filename, file, PGSIZE);
   if (res == -1)
-    process_trigger_exit (-1);
+    {
+      palloc_free_page (copied_filename);
+      process_trigger_exit (-1);
+    }
   if (res == 0)
-    return false;
+    {
+      palloc_free_page (copied_filename);
+      return false;
+    }
 
-  return filesys_create (copied_filename, initial_size);
+  success = filesys_create (copied_filename, initial_size);
+  palloc_free_page (copied_filename);
+  return success;
 }
 
 /* System call handler for `REMOVE`. */
