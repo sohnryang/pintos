@@ -276,6 +276,7 @@ process_exit (void)
       file_close (fd_ctx->file);
       process_remove_fd_ctx (fd_ctx);
     }
+  file_close (cur->process_ctx->exe_file);
   thread_release_fs_lock ();
 
   /* Destroy the current process's page directory and switch back
@@ -568,10 +569,10 @@ load (const char *file_name, void (**eip) (void), void **esp)
   *eip = (void (*) (void))ehdr.e_entry;
 
   success = true;
+  t->process_ctx->exe_file = file;
 
 done:
   /* We arrive here whether the load is successful or not. */
-  file_close (file);
   thread_release_fs_lock ();
   t->process_ctx->load_success = success;
   sema_up (&t->process_ctx->load_sema);

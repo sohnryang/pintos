@@ -54,6 +54,8 @@ struct process_context
   struct list_elem child_ctx_elem; /* List element for `children_ctx_list`. */
 
   struct list fd_ctx_list; /* List of open file descriptors. */
+
+  struct file *exe_file; /* Executable file for process. */
 };
 #endif
 
