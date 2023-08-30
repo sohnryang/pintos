@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <syscall-nr.h>
+#include "devices/input.h"
 #include "devices/shutdown.h"
 #include "filesys/file.h"
 #include "filesys/filesys.h"
@@ -15,6 +16,7 @@
 #include "userprog/process.h"
 
 #define WRITE_BUFSIZE 128
+#define READ_BUFSIZE 128
 
 static void syscall_handler (struct intr_frame *);
 static int syscall_halt (void *) NO_RETURN;
@@ -256,8 +258,58 @@ syscall_read (void *sp)
   pop_arg (int, fd, sp);
   pop_arg (void *, buffer, sp);
   pop_arg (unsigned, length, sp);
-  printf ("SYS_READ(%d, %p, %u)\n", fd, buffer, length);
-  return 0;
+
+  struct fd_context *fd_ctx;
+  char *copied_buf;
+  uint8_t key_in;
+  bool success;
+  unsigned read_len, copy_len;
+  off_t file_read_len;
+  void *dst;
+
+  fd_ctx = process_get_fd_ctx (fd);
+  if (fd_ctx == NULL)
+    process_trigger_exit (-1);
+
+  if (fd_ctx->screen_out)
+    process_trigger_exit (-1);
+  else if (fd_ctx->keyboard_in)
+    {
+      for (read_len = 0; read_len < length; read_len++)
+        {
+          key_in = input_getc ();
+          success = checked_copy_byte_to_user (buffer + read_len, key_in);
+          if (!success)
+            process_trigger_exit (-1);
+        }
+      return length;
+    }
+
+  if (fd_ctx->file == NULL)
+    process_trigger_exit (-1);
+
+  copied_buf = palloc_get_page (0);
+  file_read_len = 0;
+
+  thread_acquire_fs_lock ();
+  for (read_len = 0; read_len < length; read_len += READ_BUFSIZE)
+    {
+      copy_len = length - read_len < READ_BUFSIZE
+                     ? length - read_len
+                     : READ_BUFSIZE;
+      file_read_len += file_read (fd_ctx->file, copied_buf, copy_len);
+      dst = checked_memcpy_to_user (buffer + read_len, copied_buf, copy_len);
+      if (dst == NULL)
+        goto fail_during_copy;
+    }
+  thread_release_fs_lock ();
+
+  palloc_free_page (copied_buf);
+  return file_read_len;
+
+fail_during_copy:
+  palloc_free_page (copied_buf);
+  process_trigger_exit (-1);
 }
 
 /* System call handler for `WRITE`. */
