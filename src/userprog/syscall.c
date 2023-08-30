@@ -312,10 +312,16 @@ syscall_seek (void *sp)
 {
   int fd;
   unsigned position;
+  struct fd_context *fd_ctx;
 
   pop_arg (int, fd, sp);
   pop_arg (unsigned, position, sp);
-  printf ("SYS_SEEK(%d, %u)\n", fd, position);
+
+  fd_ctx = process_get_fd_ctx (fd);
+  if (fd_ctx == NULL || fd_ctx->file == NULL)
+    process_trigger_exit (-1);
+  file_seek (fd_ctx->file, position);
+
   return 0;
 }
 
