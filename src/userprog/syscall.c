@@ -186,13 +186,20 @@ syscall_open (void *sp)
   copied_filename = palloc_get_page (0);
   res = checked_strlcpy_from_user (copied_filename, file, PGSIZE);
   if (res == -1)
-    process_trigger_exit (-1);
+    {
+      palloc_free_page (copied_filename);
+      process_trigger_exit (-1);
+    }
 
   fd_ctx = process_create_fd_ctx ();
   if (fd_ctx == NULL)
-    return -1;
+    {
+      palloc_free_page (copied_filename);
+      return -1;
+    }
 
   fd_ctx->file = filesys_open (copied_filename);
+  palloc_free_page (copied_filename);
   if (fd_ctx->file == NULL)
     return -1;
 
