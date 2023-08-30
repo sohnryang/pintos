@@ -175,10 +175,23 @@ static int
 syscall_remove (void *sp)
 {
   const char *file;
+  char *copied_filename;
+  int res;
+  bool success;
 
   pop_arg (const char *, file, sp);
-  printf ("SYS_REMOVE(%s)\n", file);
-  return 0;
+
+  copied_filename = palloc_get_page (0);
+  res = checked_strlcpy_from_user (copied_filename, file, PGSIZE);
+  if (res == -1)
+    {
+      palloc_free_page (copied_filename);
+      process_trigger_exit (-1);
+    }
+
+  success = filesys_remove (copied_filename);
+  palloc_free_page (copied_filename);
+  return success;
 }
 
 /* System call handler for `OPEN`. */
