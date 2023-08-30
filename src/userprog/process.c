@@ -560,9 +560,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
         }
     }
 
-  /* Release file system lock. */
-  thread_release_fs_lock ();
-
   /* Set up stack. */
   if (!setup_stack (esp))
     goto done;
@@ -575,6 +572,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
 done:
   /* We arrive here whether the load is successful or not. */
   file_close (file);
+  thread_release_fs_lock ();
   t->process_ctx->load_success = success;
   sema_up (&t->process_ctx->load_sema);
   return success;
