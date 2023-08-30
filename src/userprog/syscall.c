@@ -316,16 +316,16 @@ syscall_read (void *sp)
       file_read_len += file_read (fd_ctx->file, copied_buf, copy_len);
       dst = checked_memcpy_to_user (buffer + read_len, copied_buf, copy_len);
       if (dst == NULL)
-        goto fail_during_copy;
+        {
+          thread_release_fs_lock ();
+          palloc_free_page (copied_buf);
+          process_trigger_exit (-1);
+        }
     }
   thread_release_fs_lock ();
 
   palloc_free_page (copied_buf);
   return file_read_len;
-
-fail_during_copy:
-  palloc_free_page (copied_buf);
-  process_trigger_exit (-1);
 }
 
 /* System call handler for `WRITE`. */
@@ -384,7 +384,10 @@ syscall_write (void *sp)
       dst = checked_memcpy_from_user (copied_buf, buffer + written,
                                       copy_len);
       if (dst == NULL)
-        goto fail_during_copy;
+        {
+          thread_release_fs_lock ();
+          goto fail_during_copy;
+        }
       file_written += file_write (fd_ctx->file, copied_buf, copy_len);
     }
   palloc_free_page (copied_buf);
