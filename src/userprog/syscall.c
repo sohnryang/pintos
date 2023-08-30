@@ -167,7 +167,10 @@ syscall_create (void *sp)
       return false;
     }
 
+  thread_acquire_fs_lock ();
   success = filesys_create (copied_filename, initial_size);
+  thread_release_fs_lock ();
+
   palloc_free_page (copied_filename);
   return success;
 }
@@ -191,7 +194,10 @@ syscall_remove (void *sp)
       process_trigger_exit (-1);
     }
 
+  thread_acquire_fs_lock ();
   success = filesys_remove (copied_filename);
+  thread_release_fs_lock ();
+
   palloc_free_page (copied_filename);
   return success;
 }
@@ -222,7 +228,10 @@ syscall_open (void *sp)
       return -1;
     }
 
+  thread_acquire_fs_lock ();
   fd_ctx->file = filesys_open (copied_filename);
+  thread_release_fs_lock ();
+
   palloc_free_page (copied_filename);
   if (fd_ctx->file == NULL)
     return -1;
@@ -239,12 +248,19 @@ syscall_filesize (void *sp)
 
   pop_arg (int, fd, sp);
 
+  off_t res;
+
   fd_ctx = process_get_fd_ctx (fd);
   if (fd_ctx == NULL)
     process_trigger_exit (-1);
   if (fd_ctx->file == NULL)
     process_trigger_exit (-1);
-  return file_length (fd_ctx->file);
+
+  thread_acquire_fs_lock ();
+  res = file_length (fd_ctx->file);
+  thread_release_fs_lock ();
+
+  return res;
 }
 
 /* System call handler for `READ`. */
@@ -394,7 +410,10 @@ syscall_seek (void *sp)
   fd_ctx = process_get_fd_ctx (fd);
   if (fd_ctx == NULL || fd_ctx->file == NULL)
     process_trigger_exit (-1);
+
+  thread_acquire_fs_lock ();
   file_seek (fd_ctx->file, position);
+  thread_release_fs_lock ();
 
   return 0;
 }
@@ -412,7 +431,11 @@ syscall_tell (void *sp)
   if (fd_ctx == NULL || fd_ctx->file == NULL)
     process_trigger_exit (-1);
 
-  return file_tell (fd_ctx->file);
+  thread_acquire_fs_lock ();
+  file_tell (fd_ctx->file);
+  thread_release_fs_lock ();
+
+  return 0;
 }
 
 /* System call handler for `CLOSE`. */
@@ -428,7 +451,10 @@ syscall_close (void *sp)
   if (fd_ctx == NULL)
     return -1;
 
+  thread_acquire_fs_lock ();
   file_close (fd_ctx->file);
+  thread_release_fs_lock ();
+
   process_remove_fd_ctx (fd_ctx);
   return 0;
 }
