@@ -267,6 +267,7 @@ process_exit (void)
   struct list_elem *el;
   uint32_t *pd;
 
+  thread_acquire_fs_lock ();
   while (!list_empty (&cur->process_ctx->fd_ctx_list))
     {
       struct fd_context *fd_ctx;
@@ -275,6 +276,7 @@ process_exit (void)
       file_close (fd_ctx->file);
       process_remove_fd_ctx (fd_ctx);
     }
+  thread_release_fs_lock ();
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
