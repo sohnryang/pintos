@@ -105,7 +105,11 @@ thread_init (void)
   ASSERT (intr_get_level () == INTR_OFF);
 
   lock_init (&tid_lock);
+
+#ifdef USERPROG
   lock_init (&fs_lock);
+#endif
+
   list_init (&ready_list);
   list_init (&all_list);
   list_init (&sleep_list);
