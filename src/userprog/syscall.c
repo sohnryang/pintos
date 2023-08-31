@@ -290,7 +290,7 @@ syscall_read (void *sp)
   pop_arg (unsigned, length, sp);
 
   struct fd_context *fd_ctx;
-  char *copied_buf;
+  char copied_buf[READ_BUFSIZE];
   uint8_t key_in;
   bool success;
   unsigned read_len, copy_len;
@@ -318,9 +318,6 @@ syscall_read (void *sp)
   if (fd_ctx->file == NULL)
     process_trigger_exit (-1);
 
-  copied_buf = palloc_get_page (0);
-  if (copied_buf == NULL)
-    return 0;
   file_read_len = 0;
 
   thread_acquire_fs_lock ();
@@ -334,13 +331,11 @@ syscall_read (void *sp)
       if (dst == NULL)
         {
           thread_release_fs_lock ();
-          palloc_free_page (copied_buf);
           process_trigger_exit (-1);
         }
     }
   thread_release_fs_lock ();
 
-  palloc_free_page (copied_buf);
   return file_read_len;
 }
 
@@ -357,7 +352,7 @@ syscall_write (void *sp)
   pop_arg (unsigned, length, sp);
 
   struct fd_context *fd_ctx;
-  char *copied_buf;
+  char copied_buf[WRITE_BUFSIZE];
   unsigned written, copy_len;
   void *dst;
 
@@ -369,10 +364,6 @@ syscall_write (void *sp)
     process_trigger_exit (-1);
   else if (fd_ctx->screen_out)
     {
-      copied_buf = palloc_get_page (0);
-      if (copied_buf == NULL)
-        return 0;
-
       for (written = 0; written < length; written += WRITE_BUFSIZE)
         {
           copy_len = length - written < WRITE_BUFSIZE
@@ -381,19 +372,14 @@ syscall_write (void *sp)
           dst = checked_memcpy_from_user (copied_buf, buffer + written,
                                           copy_len);
           if (dst == NULL)
-            goto fail_during_copy;
+            process_trigger_exit (-1);
           putbuf (copied_buf, copy_len);
         }
-      palloc_free_page (copied_buf);
       return length;
     }
 
   if (fd_ctx->file == NULL)
     process_trigger_exit (-1);
-
-  copied_buf = palloc_get_page (0);
-  if (copied_buf == NULL)
-    return 0;
 
   off_t file_written = 0;
 
@@ -408,17 +394,12 @@ syscall_write (void *sp)
       if (dst == NULL)
         {
           thread_release_fs_lock ();
-          goto fail_during_copy;
+          process_trigger_exit (-1);
         }
       file_written += file_write (fd_ctx->file, copied_buf, copy_len);
     }
-  palloc_free_page (copied_buf);
   thread_release_fs_lock ();
   return file_written;
-
-fail_during_copy:
-  palloc_free_page (copied_buf);
-  process_trigger_exit (-1);
 }
 
 /* System call handler for `SEEK`. */
