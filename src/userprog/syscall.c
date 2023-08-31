@@ -108,6 +108,9 @@ syscall_exec (void *sp)
   pop_arg (const uint8_t *, file, sp);
 
   copied = palloc_get_page (PAL_ZERO);
+  if (copied == NULL)
+    return TID_ERROR;
+
   res = checked_strlcpy_from_user (copied, (void *)file, PGSIZE);
   if (res == -1)
     {
@@ -119,6 +122,8 @@ syscall_exec (void *sp)
   palloc_free_page (copied);
 
   child_ctx = process_child_ctx_by_pid (child_pid);
+  if (child_ctx == NULL)
+    return TID_ERROR;
 
   sema_down (&child_ctx->load_sema);
   if (!child_ctx->load_success)
@@ -155,6 +160,9 @@ syscall_create (void *sp)
   pop_arg (unsigned, initial_size, sp);
 
   copied_filename = palloc_get_page (0);
+  if (copied_filename == NULL)
+    return false;
+
   res = checked_strlcpy_from_user (copied_filename, file, PGSIZE);
   if (res == -1)
     {
@@ -187,6 +195,9 @@ syscall_remove (void *sp)
   pop_arg (const char *, file, sp);
 
   copied_filename = palloc_get_page (0);
+  if (copied_filename == NULL)
+    return false;
+
   res = checked_strlcpy_from_user (copied_filename, file, PGSIZE);
   if (res == -1)
     {
@@ -214,6 +225,9 @@ syscall_open (void *sp)
   pop_arg (const char *, file, sp);
 
   copied_filename = palloc_get_page (0);
+  if (copied_filename == NULL)
+    return -1;
+
   res = checked_strlcpy_from_user (copied_filename, file, PGSIZE);
   if (res == -1)
     {
@@ -305,6 +319,8 @@ syscall_read (void *sp)
     process_trigger_exit (-1);
 
   copied_buf = palloc_get_page (0);
+  if (copied_buf == NULL)
+    return 0;
   file_read_len = 0;
 
   thread_acquire_fs_lock ();
@@ -354,6 +370,9 @@ syscall_write (void *sp)
   else if (fd_ctx->screen_out)
     {
       copied_buf = palloc_get_page (0);
+      if (copied_buf == NULL)
+        return 0;
+
       for (written = 0; written < length; written += WRITE_BUFSIZE)
         {
           copy_len = length - written < WRITE_BUFSIZE
@@ -373,6 +392,9 @@ syscall_write (void *sp)
     process_trigger_exit (-1);
 
   copied_buf = palloc_get_page (0);
+  if (copied_buf == NULL)
+    return 0;
+
   off_t file_written = 0;
 
   thread_acquire_fs_lock ();

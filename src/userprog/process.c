@@ -183,9 +183,19 @@ start_process (void *file_name_)
   bool success;
 
   file_name_copy = palloc_get_page (0);
+  if (file_name_copy == NULL)
+    thread_exit ();
+
   strlcpy (file_name_copy, file_name, PGSIZE);
   file_name_copy_orig = file_name_copy;
+
   argv = palloc_get_page (0);
+  if (argv == NULL)
+    {
+      palloc_free_page (file_name_copy);
+      thread_exit ();
+    }
+
   argc = parse_args (file_name_copy, argv);
   prog_name = argv[0];
 
@@ -336,7 +346,7 @@ process_trigger_exit (int status)
 }
 
 /* Create and add a `fd_context` node to the file descriptor list of this
-   process.
+   process. Returns NULL on failure.
    Note: this function only creates `fd_context` node in current process's
    `fd_ctx_list` and do nothing else. Other init tasks, setting up stdout or
    stdin, and linking this node to real file in filesystem are caller's
@@ -352,6 +362,9 @@ process_create_fd_ctx (void)
   cur = thread_current ();
   /* Use `PAL_ZERO` so that we don't have to zero-fill bunch of fields. */
   fd_new = palloc_get_page (PAL_ZERO);
+
+  if (fd_new == NULL)
+    return NULL;
 
   if (list_empty (&cur->process_ctx->fd_ctx_list))
     {
