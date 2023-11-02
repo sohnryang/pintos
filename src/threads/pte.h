@@ -109,6 +109,15 @@ pte_create_user (void *page, bool writable)
   return pte_create_kernel (page, writable) | PTE_U;
 }
 
+#ifdef VM
+/* Create user stub page. */
+static inline uint32_t
+pte_create_user_stub (bool writable)
+{
+  return (writable ? PTE_W : 0) | PTE_U;
+}
+#endif
+
 /* Returns a pointer to the page that page table entry PTE points
    to. */
 static inline void *
