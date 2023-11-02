@@ -7,6 +7,10 @@
 #include "threads/thread.h"
 #include "userprog/process.h"
 
+#ifdef VM
+#include "vm/fault.h"
+#endif
+
 /* Number of page faults processed. */
 static long long page_fault_cnt;
 
@@ -151,6 +155,7 @@ page_fault (struct intr_frame *f)
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
 
+#ifndef VM
   /* Handle page fault caused by kernel code while accessing userspace
      separately. Userspace page faults are caused by invalid pointer passed to
      system calls. In this implementation, userspace memory references are
@@ -165,6 +170,12 @@ page_fault (struct intr_frame *f)
   /* In case of page faults caused by user code, terminate the process. */
   else if (user)
     process_trigger_exit (-1);
+#else
+  if (user)
+    process_trigger_exit (-1);
+  else if (not_present && fault_handle_not_present (fault_addr))
+    return;
+#endif
 
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
