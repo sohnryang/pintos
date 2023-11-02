@@ -311,4 +311,12 @@ pagedir_set_writable (uint32_t *pd, const void *vpage, bool rw)
         *pte &= ~(uint32_t)PTE_W;
     }
 }
+
+/* Check if given `vpage` in `pd` is user page. */
+bool
+pagedir_is_user (uint32_t *pd, const void *vpage)
+{
+  uint32_t *pte = lookup_page (pd, vpage, false);
+  return pte != NULL && (*pte & PTE_U) != 0;
+}
 #endif
