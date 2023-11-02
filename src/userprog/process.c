@@ -618,6 +618,11 @@ done:
 
 static bool install_page (void *upage, void *kpage, bool writable);
 
+#ifdef VM
+static bool install_page_stub (void *upage, bool writable);
+static void disable_write_to_page (void *upage);
+#endif
+
 /* Checks whether PHDR describes a valid, loadable segment in
    FILE and returns true if so, false otherwise. */
 static bool
@@ -761,3 +766,23 @@ install_page (void *upage, void *kpage, bool writable)
   return (pagedir_get_page (t->pagedir, upage) == NULL
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
 }
+
+#ifdef VM
+/* Add a non-mapped user page `upage` to page table. */
+static bool
+install_page_stub (void *upage, bool writable)
+{
+  struct thread *cur = thread_current ();
+
+  return (pagedir_get_page (cur->pagedir, upage) == NULL
+          && pagedir_set_page_stub (cur->pagedir, upage, writable));
+}
+
+static void
+disable_write_to_page (void *upage)
+{
+  struct thread *cur = thread_current ();
+
+  pagedir_set_writable (cur->pagedir, upage, false);
+}
+#endif
