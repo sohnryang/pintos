@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "hash.h"
 #include "list.h"
 #include "threads/synch.h"
 #include "userprog/gdt.h"
@@ -16,6 +17,7 @@
 #include "threads/flags.h"
 #include "threads/init.h"
 #include "threads/interrupt.h"
+#include "threads/malloc.h"
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
@@ -747,11 +749,36 @@ setup_stack (void **esp)
 {
   uint8_t *kpage;
   bool success = false;
+  void *upage;
+
+#ifdef VM
+  struct frame *frame;
+  struct thread *cur;
+#endif
 
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL)
     {
-      success = install_page (((uint8_t *)PHYS_BASE) - PGSIZE, kpage, true);
+      upage = ((uint8_t *)PHYS_BASE) - PGSIZE;
+#ifdef VM
+      if (!install_page_stub (upage, true))
+        return false;
+
+      frame = malloc (sizeof (struct frame));
+      if (frame == NULL)
+        return false;
+
+      frame_init (frame, kpage);
+      frame_add_upage_mapping (frame, upage);
+
+      cur = thread_current ();
+      hash_insert (&cur->frames, &frame->elem);
+      pagedir_set_page (cur->pagedir, upage, kpage, true);
+
+      success = true;
+#else
+      success = install_page (upage, kpage, true);
+#endif
       if (success)
         *esp = PHYS_BASE;
       else
