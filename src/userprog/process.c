@@ -20,6 +20,11 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 
+#ifdef VM
+#include "vm/frame.h"
+#include "vm/frametable.h"
+#endif
+
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 static void process_init_fd_ctx (void);
@@ -199,6 +204,16 @@ start_process (void *file_name_)
   argc = parse_args (file_name_copy, argv);
   prog_name = argv[0];
 
+#ifdef VM
+  success = frametable_init ();
+  if (!success)
+    {
+      palloc_free_page (file_name_copy);
+      palloc_free_page (argv);
+      thread_exit ();
+    }
+#endif
+
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
@@ -290,6 +305,10 @@ process_exit (void)
     file_allow_write (cur->process_ctx->exe_file);
   file_close (cur->process_ctx->exe_file);
   thread_release_fs_lock ();
+
+#ifdef VM
+  frametable_destroy ();
+#endif
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */

@@ -9,6 +9,10 @@
 #include <list.h>
 #include <stdint.h>
 
+#ifdef VM
+#include <hash.h>
+#endif
+
 /* States in a thread's life cycle. */
 enum thread_status
 {
@@ -143,6 +147,10 @@ struct thread
 
   struct thread *parent;         /* Pointer to parent thread. */
   struct list children_ctx_list; /* List of `child_info`. */
+#endif
+
+#ifdef VM
+  struct hash frames; /* Frame table. */
 #endif
 
   /* Owned by thread.c. */
