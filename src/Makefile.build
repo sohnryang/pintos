@@ -65,6 +65,7 @@ userprog_SRC += userprog/checked_user_mem.c	# Checked user memory access.
 
 # No virtual memory code yet.
 vm_SRC  = vm/frame.c			# Page frame management.
+vm_SRC += vm/frametable.c	# Frame table management.
 
 # Filesystem code.
 filesys_SRC  = filesys/filesys.c	# Filesystem core.
