@@ -265,3 +265,28 @@ invalidate_pagedir (uint32_t *pd)
       pagedir_activate (pd);
     }
 }
+
+#ifdef VM
+/* Add `upage` to page directory `pd`, without mapping kernel page. Sets write
+   bit according to `writable`. */
+bool
+pagedir_set_page_stub (uint32_t *pd, void *upage, bool writable)
+{
+  uint32_t *pte;
+
+  ASSERT (pg_ofs (upage) == 0);
+  ASSERT (is_user_vaddr (upage));
+  ASSERT (pd != init_page_dir);
+
+  pte = lookup_page (pd, upage, true);
+
+  if (pte != NULL)
+    {
+      ASSERT ((*pte & PTE_P) == 0);
+      *pte = pte_create_user_stub (writable);
+      return true;
+    }
+  else
+    return false;
+}
+#endif
