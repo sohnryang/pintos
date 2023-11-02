@@ -289,4 +289,26 @@ pagedir_set_page_stub (uint32_t *pd, void *upage, bool writable)
   else
     return false;
 }
+
+/* Check if given `vpage` in `pd` is writable. */
+bool
+pagedir_is_writable (uint32_t *pd, const void *vpage)
+{
+  uint32_t *pte = lookup_page (pd, vpage, false);
+  return pte != NULL && (*pte & PTE_W) != 0;
+}
+
+/* Set the write bit of given `vpage` in `pd` according to `rw`. */
+void
+pagedir_set_writable (uint32_t *pd, const void *vpage, bool rw)
+{
+  uint32_t *pte = lookup_page (pd, vpage, false);
+  if (pte != NULL)
+    {
+      if (rw)
+        *pte |= PTE_W;
+      else
+        *pte &= ~(uint32_t)PTE_W;
+    }
+}
 #endif
