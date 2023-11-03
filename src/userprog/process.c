@@ -769,7 +769,8 @@ setup_stack (void **esp)
         return false;
 
       frame_init (frame, kpage);
-      frame_add_upage_mapping (frame, upage);
+      if (!frame_add_upage_mapping (frame, upage))
+        return false;
 
       cur = thread_current ();
       hash_insert (&cur->frames, &frame->elem);
