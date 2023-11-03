@@ -26,13 +26,13 @@ void debug_backtrace_all (void);
 #undef NOT_REACHED
 
 #ifndef NDEBUG
-#define ASSERT(CONDITION)                           \
-  if (CONDITION)                                    \
-    {                                               \
-    }                                               \
-  else                                              \
-    {                                               \
-      PANIC ("assertion `%s' failed.", #CONDITION); \
+#define ASSERT(CONDITION)                                                      \
+  if (CONDITION)                                                               \
+    {                                                                          \
+    }                                                                          \
+  else                                                                         \
+    {                                                                          \
+      PANIC ("assertion `%s' failed.", #CONDITION);                            \
     }
 #define NOT_REACHED() PANIC ("executed an unreachable statement");
 #else

@@ -21,8 +21,8 @@ main (int argc, char *argv[])
   /* Execute child and wait for it to finish if requested. */
   if (atoi (argv[2]) != 0)
     {
-      snprintf (buffer, sizeof buffer,
-                "recursor %s %d %s", argv[1], atoi (argv[2]) - 1, argv[3]);
+      snprintf (buffer, sizeof buffer, "recursor %s %d %s", argv[1],
+                atoi (argv[2]) - 1, argv[3]);
       pid = exec (buffer);
       if (atoi (argv[3]))
         retval = wait (pid);

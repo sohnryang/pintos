@@ -70,8 +70,8 @@ test_priority_donate_chain (void)
       lock_pairs[i].second = locks + i - 1;
 
       thread_create (name, thread_priority, donor_thread_func, lock_pairs + i);
-      msg ("%s should have priority %d.  Actual priority: %d.",
-           thread_name (), thread_priority, thread_get_priority ());
+      msg ("%s should have priority %d.  Actual priority: %d.", thread_name (),
+           thread_priority, thread_get_priority ());
 
       snprintf (name, sizeof name, "interloper %d", i);
       thread_create (name, thread_priority - 1, interloper_thread_func, NULL);
@@ -94,9 +94,8 @@ donor_thread_func (void *locks_)
   msg ("%s got lock", thread_name ());
 
   lock_release (locks->second);
-  msg ("%s should have priority %d. Actual priority: %d",
-       thread_name (), (NESTING_DEPTH - 1) * 3,
-       thread_get_priority ());
+  msg ("%s should have priority %d. Actual priority: %d", thread_name (),
+       (NESTING_DEPTH - 1) * 3, thread_get_priority ());
 
   if (locks->first)
     lock_release (locks->first);

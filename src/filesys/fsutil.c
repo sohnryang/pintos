@@ -102,7 +102,8 @@ fsutil_extract (char **argv UNUSED)
       block_read (src, sector++, header);
       error = ustar_parse_header (header, &file_name, &type, &size);
       if (error != NULL)
-        PANIC ("bad ustar header in sector %" PRDSNu " (%s)", sector - 1, error);
+        PANIC ("bad ustar header in sector %" PRDSNu " (%s)", sector - 1,
+               error);
 
       if (type == USTAR_EOF)
         {
@@ -127,13 +128,12 @@ fsutil_extract (char **argv UNUSED)
           /* Do copy. */
           while (size > 0)
             {
-              int chunk_size = (size > BLOCK_SECTOR_SIZE
-                                    ? BLOCK_SECTOR_SIZE
-                                    : size);
+              int chunk_size
+                  = (size > BLOCK_SECTOR_SIZE ? BLOCK_SECTOR_SIZE : size);
               block_read (src, sector++, data);
               if (file_write (dst, data, chunk_size) != chunk_size)
-                PANIC ("%s: write failed with %d bytes unwritten",
-                       file_name, size);
+                PANIC ("%s: write failed with %d bytes unwritten", file_name,
+                       size);
               size -= chunk_size;
             }
 

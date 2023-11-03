@@ -49,8 +49,7 @@ get_inumber (const char *file_name, int *inum)
    (No null terminator is actually added or depended upon, but
    its space is accounted for.) */
 static bool
-prepend (const char *prefix,
-         char *dst, size_t *dst_len, size_t dst_size)
+prepend (const char *prefix, char *dst, size_t *dst_len, size_t dst_size)
 {
   size_t prefix_len = strlen (prefix);
   if (prefix_len + *dst_len + 1 <= dst_size)

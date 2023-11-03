@@ -26,7 +26,5 @@ check_tell (int fd, long ofs)
 void
 test_main (void)
 {
-  seq_test ("foobar",
-            buf, sizeof buf, 0,
-            return_block_size, check_tell);
+  seq_test ("foobar", buf, sizeof buf, 0, return_block_size, check_tell);
 }

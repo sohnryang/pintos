@@ -56,11 +56,12 @@ test_main (void)
       CHECK (readdir (fd, name[0]), "readdir \".\"");
       CHECK (readdir (fd, name[1]), "readdir \".\"");
       CHECK (!readdir (fd, name[2]), "readdir \".\" (should fail)");
-      CHECK ((!strcmp (name[0], dir_name) && !strcmp (name[1], file_name))
-                 || (!strcmp (name[1], dir_name) && !strcmp (name[0], file_name)),
-             "names should be \"%s\" and \"%s\", "
-             "actually \"%s\" and \"%s\"",
-             file_name, dir_name, name[0], name[1]);
+      CHECK (
+          (!strcmp (name[0], dir_name) && !strcmp (name[1], file_name))
+              || (!strcmp (name[1], dir_name) && !strcmp (name[0], file_name)),
+          "names should be \"%s\" and \"%s\", "
+          "actually \"%s\" and \"%s\"",
+          file_name, dir_name, name[0], name[1]);
       close (fd);
 
       /* Descend into directory. */

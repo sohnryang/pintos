@@ -181,8 +181,8 @@ list_insert (struct list_elem *before, struct list_elem *elem)
    current list, then inserts them just before BEFORE, which may
    be either an interior element or a tail. */
 void
-list_splice (struct list_elem *before,
-             struct list_elem *first, struct list_elem *last)
+list_splice (struct list_elem *before, struct list_elem *first,
+             struct list_elem *last)
 {
   ASSERT (is_interior (before) || is_tail (before));
   if (first == last)
@@ -339,8 +339,8 @@ list_reverse (struct list *list)
 /* Returns true only if the list elements A through B (exclusive)
    are in order according to LESS given auxiliary data AUX. */
 static bool
-is_sorted (struct list_elem *a, struct list_elem *b,
-           list_less_func *less, void *aux)
+is_sorted (struct list_elem *a, struct list_elem *b, list_less_func *less,
+           void *aux)
 {
   if (a != b)
     while ((a = list_next (a)) != b)
@@ -355,8 +355,8 @@ is_sorted (struct list_elem *a, struct list_elem *b,
    run.
    A through B (exclusive) must form a non-empty range. */
 static struct list_elem *
-find_end_of_run (struct list_elem *a, struct list_elem *b,
-                 list_less_func *less, void *aux)
+find_end_of_run (struct list_elem *a, struct list_elem *b, list_less_func *less,
+                 void *aux)
 {
   ASSERT (a != NULL);
   ASSERT (b != NULL);
@@ -378,8 +378,7 @@ find_end_of_run (struct list_elem *a, struct list_elem *b,
    AUX.  The output range will be sorted the same way. */
 static void
 inplace_merge (struct list_elem *a0, struct list_elem *a1b0,
-               struct list_elem *b1,
-               list_less_func *less, void *aux)
+               struct list_elem *b1, list_less_func *less, void *aux)
 {
   ASSERT (a0 != NULL);
   ASSERT (a1b0 != NULL);
@@ -463,8 +462,8 @@ list_insert_ordered (struct list *list, struct list_elem *elem,
    given auxiliary data AUX.  If DUPLICATES is non-null, then the
    elements from LIST are appended to DUPLICATES. */
 void
-list_unique (struct list *list, struct list *duplicates,
-             list_less_func *less, void *aux)
+list_unique (struct list *list, struct list *duplicates, list_less_func *less,
+             void *aux)
 {
   struct list_elem *elem, *next;
 

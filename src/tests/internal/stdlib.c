@@ -103,8 +103,7 @@ verify_bsearch (const int *array, size_t cnt)
 
   /* Check that all the values in the array are found properly. */
   for (i = 0; (size_t)i < cnt; i++)
-    ASSERT (bsearch (&i, array, cnt, sizeof *array, compare_ints)
-            == array + i);
+    ASSERT (bsearch (&i, array, cnt, sizeof *array, compare_ints) == array + i);
 
   /* Check that some values not in the array are not found. */
   not_in_array[0] = cnt;

@@ -21,7 +21,8 @@ is_valid_user_ptr (const void *uaddr)
 static bool
 is_contained_in_user (const void *uaddr, size_t n)
 {
-  return is_valid_user_ptr (uaddr) && is_valid_user_ptr ((const uint8_t *)uaddr + n - 1);
+  return is_valid_user_ptr (uaddr)
+         && is_valid_user_ptr ((const uint8_t *)uaddr + n - 1);
 }
 
 int

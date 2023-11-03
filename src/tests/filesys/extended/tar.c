@@ -8,8 +8,8 @@
 #include <string.h>
 
 static void usage (void);
-static bool make_tar_archive (const char *archive_name,
-                              char *files[], size_t file_cnt);
+static bool make_tar_archive (const char *archive_name, char *files[],
+                              size_t file_cnt);
 
 int
 main (int argc, char *argv[])
@@ -17,9 +17,8 @@ main (int argc, char *argv[])
   if (argc < 3)
     usage ();
 
-  return (make_tar_archive (argv[1], argv + 2, argc - 2)
-              ? EXIT_SUCCESS
-              : EXIT_FAILURE);
+  return (make_tar_archive (argv[1], argv + 2, argc - 2) ? EXIT_SUCCESS
+                                                         : EXIT_FAILURE);
 }
 
 static void
@@ -72,8 +71,7 @@ make_tar_archive (const char *archive_name, char *files[], size_t file_cnt)
       char file_name[128];
 
       strlcpy (file_name, files[i], sizeof file_name);
-      if (!archive_file (file_name, sizeof file_name,
-                         archive_fd, &write_error))
+      if (!archive_file (file_name, sizeof file_name, archive_fd, &write_error))
         success = false;
     }
 
@@ -87,8 +85,8 @@ make_tar_archive (const char *archive_name, char *files[], size_t file_cnt)
 }
 
 static bool
-archive_file (char file_name[], size_t file_name_size,
-              int archive_fd, bool *write_error)
+archive_file (char file_name[], size_t file_name_size, int archive_fd,
+              bool *write_error)
 {
   int file_fd = open (file_name);
   if (file_fd >= 0)
@@ -98,8 +96,8 @@ archive_file (char file_name[], size_t file_name_size,
       if (inumber (file_fd) != inumber (archive_fd))
         {
           if (!isdir (file_fd))
-            success = archive_ordinary_file (file_name, file_fd,
-                                             archive_fd, write_error);
+            success = archive_ordinary_file (file_name, file_fd, archive_fd,
+                                             write_error);
           else
             success = archive_directory (file_name, file_name_size, file_fd,
                                          archive_fd, write_error);
@@ -122,15 +120,15 @@ archive_file (char file_name[], size_t file_name_size,
 }
 
 static bool
-archive_ordinary_file (const char *file_name, int file_fd,
-                       int archive_fd, bool *write_error)
+archive_ordinary_file (const char *file_name, int file_fd, int archive_fd,
+                       bool *write_error)
 {
   bool read_error = false;
   bool success = true;
   int file_size = filesize (file_fd);
 
-  if (!write_header (file_name, USTAR_REGULAR, file_size,
-                     archive_fd, write_error))
+  if (!write_header (file_name, USTAR_REGULAR, file_size, archive_fd,
+                     write_error))
     return false;
 
   while (file_size > 0)

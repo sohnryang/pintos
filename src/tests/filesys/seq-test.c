@@ -24,8 +24,8 @@ seq_test (const char *file_name, void *buf, size_t size, size_t initial_size,
         block_size = size - ofs;
 
       if (write (fd, buf + ofs, block_size) != (int)block_size)
-        fail ("write %zu bytes at offset %zu in \"%s\" failed",
-              block_size, ofs, file_name);
+        fail ("write %zu bytes at offset %zu in \"%s\" failed", block_size, ofs,
+              file_name);
 
       ofs += block_size;
       if (check_func != NULL)

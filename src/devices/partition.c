@@ -18,9 +18,8 @@ static struct block_operations partition_operations;
 static void read_partition_table (struct block *, block_sector_t sector,
                                   block_sector_t primary_extended_sector,
                                   int *part_nr);
-static void found_partition (struct block *, uint8_t type,
-                             block_sector_t start, block_sector_t size,
-                             int part_nr);
+static void found_partition (struct block *, uint8_t type, block_sector_t start,
+                             block_sector_t size, int part_nr);
 static const char *partition_type_name (uint8_t);
 
 /* Scans BLOCK for partitions of interest to Pintos. */
@@ -48,8 +47,7 @@ partition_scan (struct block *block)
    partitions are found. */
 static void
 read_partition_table (struct block *block, block_sector_t sector,
-                      block_sector_t primary_extended_sector,
-                      int *part_nr)
+                      block_sector_t primary_extended_sector, int *part_nr)
 {
   /* Format of a partition table entry.  See [Partitions]. */
   struct partition_table_entry
@@ -65,7 +63,7 @@ read_partition_table (struct block *block, block_sector_t sector,
   /* Partition table sector. */
   struct partition_table
   {
-    uint8_t loader[446];                        /* Loader, in top-level partition table. */
+    uint8_t loader[446]; /* Loader, in top-level partition table. */
     struct partition_table_entry partitions[4]; /* Table entries. */
     uint16_t signature;                         /* Should be 0xaa55. */
   } PACKED;
@@ -135,8 +133,8 @@ read_partition_table (struct block *block, block_sector_t sector,
         {
           ++*part_nr;
 
-          found_partition (block, e->type, e->offset + sector,
-                           e->size, *part_nr);
+          found_partition (block, e->type, e->offset + sector, e->size,
+                           *part_nr);
         }
     }
 
@@ -149,15 +147,15 @@ read_partition_table (struct block *block, block_sector_t sector,
    Check whether this is a partition of interest to Pintos, and
    if so then add it to the proper element of partitions[]. */
 static void
-found_partition (struct block *block, uint8_t part_type,
-                 block_sector_t start, block_sector_t size,
-                 int part_nr)
+found_partition (struct block *block, uint8_t part_type, block_sector_t start,
+                 block_sector_t size, int part_nr)
 {
   if (start >= block_size (block))
     printf ("%s%d: Partition starts past end of device (sector %" PRDSNu ")\n",
             block_name (block), part_nr, start);
   else if (start + size < start || start + size > block_size (block))
-    printf ("%s%d: Partition end (%" PRDSNu ") past end of device (%" PRDSNu ")\n",
+    printf ("%s%d: Partition end (%" PRDSNu ") past end of device (%" PRDSNu
+            ")\n",
             block_name (block), part_nr, start + size, block_size (block));
   else
     {
@@ -314,7 +312,5 @@ partition_write (void *p_, block_sector_t sector, const void *buffer)
   block_write (p->block, p->start + sector, buffer);
 }
 
-static struct block_operations partition_operations = {
-  partition_read,
-  partition_write
-};
+static struct block_operations partition_operations
+    = { partition_read, partition_write };

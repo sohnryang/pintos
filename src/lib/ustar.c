@@ -64,8 +64,7 @@ calculate_chksum (const struct ustar_header *h)
 static const char *
 strip_antisocial_prefixes (const char *file_name)
 {
-  while (*file_name == '/'
-         || !memcmp (file_name, "./", 2)
+  while (*file_name == '/' || !memcmp (file_name, "./", 2)
          || !memcmp (file_name, "../", 3))
     file_name = strchr (file_name, '/') + 1;
   return *file_name == '\0' || !strcmp (file_name, "..") ? "." : file_name;
@@ -79,8 +78,8 @@ strip_antisocial_prefixes (const char *file_name)
    If successful, returns true.  On failure (due to an
    excessively long file name), returns false. */
 bool
-ustar_make_header (const char *file_name, enum ustar_type type,
-                   int size, char header[USTAR_HEADER_SIZE])
+ustar_make_header (const char *file_name, enum ustar_type type, int size,
+                   char header[USTAR_HEADER_SIZE])
 {
   struct ustar_header *h = (struct ustar_header *)header;
 

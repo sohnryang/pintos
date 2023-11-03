@@ -49,12 +49,8 @@ gdt_init (void)
      Table Register (GDTR)", 2.4.4 "Task Register (TR)", and
      6.2.4 "Task Register".  */
   gdtr_operand = make_gdtr_operand (sizeof gdt - 1, gdt);
-  asm volatile ("lgdt %0"
-                :
-                : "m"(gdtr_operand));
-  asm volatile ("ltr %w0"
-                :
-                : "q"(SEL_TSS));
+  asm volatile ("lgdt %0" : : "m"(gdtr_operand));
+  asm volatile ("ltr %w0" : : "q"(SEL_TSS));
 }
 
 /* System segment or code/data segment? */
@@ -83,12 +79,8 @@ enum seg_granularity
    DPL==0 means that only the kernel can use the segment.  See
    [IA32-v3a] 4.5 "Privilege Levels" for further discussion. */
 static uint64_t
-make_seg_desc (uint32_t base,
-               uint32_t limit,
-               enum seg_class class,
-               int type,
-               int dpl,
-               enum seg_granularity granularity)
+make_seg_desc (uint32_t base, uint32_t limit, enum seg_class class, int type,
+               int dpl, enum seg_granularity granularity)
 {
   uint32_t e0, e1;
 

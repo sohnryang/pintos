@@ -16,8 +16,8 @@ pick_pivot (unsigned char *buf, size_t size)
    SIZE - LEFT_SIZE elements all greater than or equal to
    PIVOT. */
 static bool
-is_partitioned (const unsigned char *array, size_t size,
-                unsigned char pivot, size_t left_size)
+is_partitioned (const unsigned char *array, size_t size, unsigned char pivot,
+                size_t left_size)
 {
   size_t i;
 

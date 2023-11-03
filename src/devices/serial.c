@@ -49,9 +49,7 @@
 #define LSR_THRE 0x20 /* THR Empty. */
 
 /* Transmission mode. */
-static enum { UNINIT,
-              POLL,
-              QUEUE } mode;
+static enum { UNINIT, POLL, QUEUE } mode;
 
 /* Data to be transmitted. */
 static struct intq txq;

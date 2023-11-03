@@ -288,7 +288,5 @@ arena_to_block (struct arena *a, size_t idx)
   ASSERT (a != NULL);
   ASSERT (a->magic == ARENA_MAGIC);
   ASSERT (idx < a->desc->blocks_per_arena);
-  return (struct block *)((uint8_t *)a
-                          + sizeof *a
-                          + idx * a->desc->block_size);
+  return (struct block *)((uint8_t *)a + sizeof *a + idx * a->desc->block_size);
 }

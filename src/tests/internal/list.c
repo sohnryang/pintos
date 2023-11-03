@@ -81,14 +81,12 @@ test (void)
           shuffle (values, size);
           list_init (&list);
           for (i = 0; i < size; i++)
-            list_insert_ordered (&list, &values[i].elem,
-                                 value_less, NULL);
+            list_insert_ordered (&list, &values[i].elem, value_less, NULL);
           verify_list_fwd (&list, size);
 
           /* Duplicate some items, uniquify, and verify. */
           ofs = size;
-          for (e = list_begin (&list); e != list_end (&list);
-               e = list_next (e))
+          for (e = list_begin (&list); e != list_end (&list); e = list_next (e))
             {
               struct value *v = list_entry (e, struct value, elem);
               int copies = random_ulong () % 4;
@@ -143,8 +141,7 @@ verify_list_fwd (struct list *list, int size)
   struct list_elem *e;
   int i;
 
-  for (i = 0, e = list_begin (list);
-       i < size && e != list_end (list);
+  for (i = 0, e = list_begin (list); i < size && e != list_end (list);
        i++, e = list_next (e))
     {
       struct value *v = list_entry (e, struct value, elem);
@@ -162,8 +159,7 @@ verify_list_bkwd (struct list *list, int size)
   struct list_elem *e;
   int i;
 
-  for (i = 0, e = list_rbegin (list);
-       i < size && e != list_rend (list);
+  for (i = 0, e = list_rbegin (list); i < size && e != list_rend (list);
        i++, e = list_prev (e))
     {
       struct value *v = list_entry (e, struct value, elem);

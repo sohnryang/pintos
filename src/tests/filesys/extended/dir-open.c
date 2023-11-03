@@ -16,6 +16,5 @@ test_main (void)
 
   msg ("write \"xyzzy\"");
   retval = write (fd, "foobar", 6);
-  CHECK (retval == -1,
-         "write \"xyzzy\" (must return -1, actually %d)", retval);
+  CHECK (retval == -1, "write \"xyzzy\" (must return -1, actually %d)", retval);
 }

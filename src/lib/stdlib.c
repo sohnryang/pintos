@@ -84,8 +84,7 @@ do_swap (unsigned char *array, size_t a_idx, size_t b_idx, size_t size)
    strcmp()-type result. */
 static int
 do_compare (unsigned char *array, size_t a_idx, size_t b_idx, size_t size,
-            int (*compare) (const void *, const void *, void *aux),
-            void *aux)
+            int (*compare) (const void *, const void *, void *aux), void *aux)
 {
   return compare (array + (a_idx - 1) * size, array + (b_idx - 1) * size, aux);
 }
@@ -95,8 +94,7 @@ do_compare (unsigned char *array, size_t a_idx, size_t b_idx, size_t size,
    elements, passing AUX as auxiliary data. */
 static void
 heapify (unsigned char *array, size_t i, size_t cnt, size_t size,
-         int (*compare) (const void *, const void *, void *aux),
-         void *aux)
+         int (*compare) (const void *, const void *, void *aux), void *aux)
 {
   for (;;)
     {
@@ -130,8 +128,7 @@ heapify (unsigned char *array, size_t i, size_t cnt, size_t size,
    B.  Runs in O(n lg n) time and O(1) space in CNT. */
 void
 sort (void *array, size_t cnt, size_t size,
-      int (*compare) (const void *, const void *, void *aux),
-      void *aux)
+      int (*compare) (const void *, const void *, void *aux), void *aux)
 {
   size_t i;
 
@@ -163,8 +160,8 @@ sort (void *array, size_t cnt, size_t size,
    strcmp()-type result, i.e. less than zero if A < B, zero if A
    == B, greater than zero if A > B. */
 void *
-bsearch (const void *key, const void *array, size_t cnt,
-         size_t size, int (*compare) (const void *, const void *))
+bsearch (const void *key, const void *array, size_t cnt, size_t size,
+         int (*compare) (const void *, const void *))
 {
   return binary_search (key, array, cnt, size, compare_thunk, &compare);
 }

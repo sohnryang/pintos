@@ -35,15 +35,14 @@ main (int argc, char *argv[])
       it.it_value.tv_sec = timeout;
       it.it_value.tv_usec = (timeout - floor (timeout)) * 1000000;
       if (setitimer (ITIMER_VIRTUAL, &it, NULL) < 0)
-        fprintf (stderr, "%s: setitimer: %s\n",
-                 program_name, strerror (errno));
+        fprintf (stderr, "%s: setitimer: %s\n", program_name, strerror (errno));
     }
   else
-    fprintf (stderr, "%s: invalid timeout value \"%s\"\n",
-             program_name, argv[1]);
+    fprintf (stderr, "%s: invalid timeout value \"%s\"\n", program_name,
+             argv[1]);
 
   execvp (argv[2], &argv[2]);
-  fprintf (stderr, "%s: couldn't exec \"%s\": %s\n",
-           program_name, argv[2], strerror (errno));
+  fprintf (stderr, "%s: couldn't exec \"%s\": %s\n", program_name, argv[2],
+           strerror (errno));
   return EXIT_FAILURE;
 }

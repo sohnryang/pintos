@@ -36,8 +36,8 @@ test_main (void)
   /* Verify that data is followed by zeros. */
   for (i = strlen (sample); i < 4096; i++)
     if (actual[i] != 0)
-      fail ("byte %zu of mmap'd region has value %02hhx (should be 0)",
-            i, actual[i]);
+      fail ("byte %zu of mmap'd region has value %02hhx (should be 0)", i,
+            actual[i]);
 
   munmap (map);
 }

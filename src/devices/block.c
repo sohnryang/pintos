@@ -35,12 +35,7 @@ const char *
 block_type_name (enum block_type type)
 {
   static const char *block_type_names[BLOCK_CNT] = {
-    "kernel",
-    "filesys",
-    "scratch",
-    "swap",
-    "raw",
-    "foreign",
+    "kernel", "filesys", "scratch", "swap", "raw", "foreign",
   };
 
   ASSERT (type < BLOCK_CNT);
@@ -171,9 +166,9 @@ block_print_stats (void)
       struct block *block = block_by_role[i];
       if (block != NULL)
         {
-          printf ("%s (%s): %llu reads, %llu writes\n",
-                  block->name, block_type_name (block->type),
-                  block->read_cnt, block->write_cnt);
+          printf ("%s (%s): %llu reads, %llu writes\n", block->name,
+                  block_type_name (block->type), block->read_cnt,
+                  block->write_cnt);
         }
     }
 }
@@ -184,9 +179,9 @@ block_print_stats (void)
    be provided, as well as the it operation functions OPS, which
    will be passed AUX in each function call. */
 struct block *
-block_register (const char *name, enum block_type type,
-                const char *extra_info, block_sector_t size,
-                const struct block_operations *ops, void *aux)
+block_register (const char *name, enum block_type type, const char *extra_info,
+                block_sector_t size, const struct block_operations *ops,
+                void *aux)
 {
   struct block *block = malloc (sizeof *block);
   if (block == NULL)

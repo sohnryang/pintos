@@ -67,9 +67,9 @@ struct channel
   uint16_t reg_base; /* Base I/O port. */
   uint8_t irq;       /* Interrupt in use. */
 
-  struct lock lock;                 /* Must acquire to access the controller. */
-  bool expecting_interrupt;         /* True if an interrupt is expected, false if
-                                       any interrupt would be spurious. */
+  struct lock lock;         /* Must acquire to access the controller. */
+  bool expecting_interrupt; /* True if an interrupt is expected, false if
+                               any interrupt would be spurious. */
   struct semaphore completion_wait; /* Up'd by interrupt handler. */
 
   struct ata_disk devices[2]; /* The devices on this channel. */
@@ -131,8 +131,8 @@ ide_init (void)
       for (dev_no = 0; dev_no < 2; dev_no++)
         {
           struct ata_disk *d = &c->devices[dev_no];
-          snprintf (d->name, sizeof d->name,
-                    "hd%c", 'a' + chan_no * 2 + dev_no);
+          snprintf (d->name, sizeof d->name, "hd%c",
+                    'a' + chan_no * 2 + dev_no);
           d->channel = c;
           d->dev_no = dev_no;
           d->is_ata = false;
@@ -184,8 +184,8 @@ reset_channel (struct channel *c)
       outb (reg_nsect (c), 0x55);
       outb (reg_lbal (c), 0xaa);
 
-      present[dev_no] = (inb (reg_nsect (c)) == 0x55
-                         && inb (reg_lbal (c)) == 0xaa);
+      present[dev_no]
+          = (inb (reg_nsect (c)) == 0x55 && inb (reg_lbal (c)) == 0xaa);
     }
 
   /* Issue soft reset sequence, which selects device 0 as a side effect.
@@ -240,8 +240,7 @@ check_device_type (struct ata_disk *d)
   status = inb (reg_status (c));
 
   if ((error != 1 && (error != 0x81 || d->dev_no == 1))
-      || (status & STA_DRDY) == 0
-      || (status & STA_BSY) != 0)
+      || (status & STA_DRDY) == 0 || (status & STA_BSY) != 0)
     {
       d->is_ata = false;
       return error != 0x81;
@@ -286,8 +285,8 @@ identify_ata_device (struct ata_disk *d)
   capacity = *(uint32_t *)&id[60 * 2];
   model = descramble_ata_string (&id[10 * 2], 20);
   serial = descramble_ata_string (&id[27 * 2], 40);
-  snprintf (extra_info, sizeof extra_info,
-            "model \"%s\", serial \"%s\"", model, serial);
+  snprintf (extra_info, sizeof extra_info, "model \"%s\", serial \"%s\"", model,
+            serial);
 
   /* Disable access to IDE disks over 1 GB, which are likely
      physical IDE disks rather than virtual ones.  If we don't
@@ -376,10 +375,7 @@ ide_write (void *d_, block_sector_t sec_no, const void *buffer)
   lock_release (&c->lock);
 }
 
-static struct block_operations ide_operations = {
-  ide_read,
-  ide_write
-};
+static struct block_operations ide_operations = { ide_read, ide_write };
 
 /* Selects device D, waiting for it to become ready, and then
    writes SEC_NO to the disk's sector selection registers.  (We

@@ -70,8 +70,7 @@ intr_get_level (void)
      value off the stack into `flags'.  See [IA32-v2b] "PUSHF"
      and "POP" and [IA32-v3a] 5.8.1 "Masking Maskable Hardware
      Interrupts". */
-  asm volatile ("pushfl; popl %0"
-                : "=g"(flags));
+  asm volatile ("pushfl; popl %0" : "=g"(flags));
 
   return flags & FLAG_IF ? INTR_ON : INTR_OFF;
 }
@@ -109,10 +108,7 @@ intr_disable (void)
   /* Disable interrupts by clearing the interrupt flag.
      See [IA32-v2b] "CLI" and [IA32-v3a] 5.8.1 "Masking Maskable
      Hardware Interrupts". */
-  asm volatile ("cli"
-                :
-                :
-                : "memory");
+  asm volatile ("cli" : : : "memory");
 
   return old_level;
 }
@@ -135,9 +131,7 @@ intr_init (void)
      See [IA32-v2a] "LIDT" and [IA32-v3a] 5.10 "Interrupt
      Descriptor Table (IDT)". */
   idtr_operand = make_idtr_operand (sizeof idt - 1, idt);
-  asm volatile ("lidt %0"
-                :
-                : "m"(idtr_operand));
+  asm volatile ("lidt %0" : : "m"(idtr_operand));
 
   /* Initialize intr_names. */
   for (i = 0; i < INTR_CNT; i++)
@@ -184,8 +178,7 @@ register_handler (uint8_t vec_no, int dpl, enum intr_level level,
    is named NAME for debugging purposes.  The handler will
    execute with interrupts disabled. */
 void
-intr_register_ext (uint8_t vec_no, intr_handler_func *handler,
-                   const char *name)
+intr_register_ext (uint8_t vec_no, intr_handler_func *handler, const char *name)
 {
   ASSERT (vec_no >= 0x20 && vec_no <= 0x2f);
   register_handler (vec_no, 0, INTR_OFF, handler, name);
@@ -408,8 +401,8 @@ unexpected_interrupt (const struct intr_frame *f)
      that, but one that occurs many times will not overwhelm the
      console. */
   if ((n & (n - 1)) == 0)
-    printf ("Unexpected interrupt %#04x (%s)\n",
-            f->vec_no, intr_names[f->vec_no]);
+    printf ("Unexpected interrupt %#04x (%s)\n", f->vec_no,
+            intr_names[f->vec_no]);
 }
 
 /* Dumps interrupt frame F to the console, for debugging. */
@@ -423,17 +416,19 @@ intr_dump_frame (const struct intr_frame *f)
      See [IA32-v2a] "MOV--Move to/from Control Registers" and
      [IA32-v3a] 5.14 "Interrupt 14--Page Fault Exception
      (#PF)". */
-  asm ("movl %%cr2, %0"
-       : "=r"(cr2));
+  asm ("movl %%cr2, %0" : "=r"(cr2));
 
-  printf ("Interrupt %#04x (%s) at eip=%p\n",
-          f->vec_no, intr_names[f->vec_no], f->eip);
+  printf ("Interrupt %#04x (%s) at eip=%p\n", f->vec_no, intr_names[f->vec_no],
+          f->eip);
   printf (" cr2=%08" PRIx32 " error=%08" PRIx32 "\n", cr2, f->error_code);
-  printf (" eax=%08" PRIx32 " ebx=%08" PRIx32 " ecx=%08" PRIx32 " edx=%08" PRIx32 "\n",
+  printf (" eax=%08" PRIx32 " ebx=%08" PRIx32 " ecx=%08" PRIx32
+          " edx=%08" PRIx32 "\n",
           f->eax, f->ebx, f->ecx, f->edx);
-  printf (" esi=%08" PRIx32 " edi=%08" PRIx32 " esp=%08" PRIx32 " ebp=%08" PRIx32 "\n",
+  printf (" esi=%08" PRIx32 " edi=%08" PRIx32 " esp=%08" PRIx32
+          " ebp=%08" PRIx32 "\n",
           f->esi, f->edi, (uint32_t)f->esp, f->ebp);
-  printf (" cs=%04" PRIx16 " ds=%04" PRIx16 " es=%04" PRIx16 " ss=%04" PRIx16 "\n",
+  printf (" cs=%04" PRIx16 " ds=%04" PRIx16 " es=%04" PRIx16 " ss=%04" PRIx16
+          "\n",
           f->cs, f->ds, f->es, f->ss);
 }
 

@@ -114,8 +114,7 @@ release_console (void)
 static bool
 console_locked_by_current_thread (void)
 {
-  return (intr_context ()
-          || !use_console_lock
+  return (intr_context () || !use_console_lock
           || lock_held_by_current_thread (&console_lock));
 }
 

@@ -36,8 +36,8 @@ struct hash_elem
    name of the outer structure STRUCT and the member name MEMBER
    of the hash element.  See the big comment at the top of the
    file for an example. */
-#define hash_entry(HASH_ELEM, STRUCT, MEMBER)    \
-  ((STRUCT *)((uint8_t *)&(HASH_ELEM)->list_elem \
+#define hash_entry(HASH_ELEM, STRUCT, MEMBER)                                  \
+  ((STRUCT *)((uint8_t *)&(HASH_ELEM)->list_elem                               \
               - offsetof (STRUCT, MEMBER.list_elem)))
 
 /* Computes and returns the hash value for hash element E, given
@@ -48,8 +48,7 @@ typedef unsigned hash_hash_func (const struct hash_elem *e, void *aux);
    auxiliary data AUX.  Returns true if A is less than B, or
    false if A is greater than or equal to B. */
 typedef bool hash_less_func (const struct hash_elem *a,
-                             const struct hash_elem *b,
-                             void *aux);
+                             const struct hash_elem *b, void *aux);
 
 /* Performs some operation on hash element E, given auxiliary
    data AUX. */

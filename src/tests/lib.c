@@ -99,14 +99,13 @@ wait_children (pid_t pids[], size_t child_cnt)
     {
       int status = wait (pids[i]);
       CHECK (status == (int)i,
-             "wait for child %zu of %zu returned %d (expected %zu)",
-             i + 1, child_cnt, status, i);
+             "wait for child %zu of %zu returned %d (expected %zu)", i + 1,
+             child_cnt, status, i);
     }
 }
 
 void
-check_file_handle (int fd,
-                   const char *file_name, const void *buf_, size_t size)
+check_file_handle (int fd, const char *file_name, const void *buf_, size_t size)
 {
   const char *buf = buf_;
   size_t ofs = 0;
@@ -117,8 +116,8 @@ check_file_handle (int fd,
      file. */
   file_size = filesize (fd);
   if (file_size != size)
-    msg ("size of %s (%zu) differs from expected (%zu)",
-         file_name, file_size, size);
+    msg ("size of %s (%zu) differs from expected (%zu)", file_name, file_size,
+         size);
 
   /* Read the file block-by-block, comparing data as we go. */
   while (ofs < size)
@@ -141,8 +140,8 @@ check_file_handle (int fd,
 
   /* Now fail due to wrong file size. */
   if (file_size != size)
-    fail ("size of %s (%zu) differs from expected (%zu)",
-          file_name, file_size, size);
+    fail ("size of %s (%zu) differs from expected (%zu)", file_name, file_size,
+          size);
 
   msg ("verified contents of \"%s\"", file_name);
 }

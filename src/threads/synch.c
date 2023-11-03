@@ -120,8 +120,8 @@ sema_up (struct semaphore *sema)
   unblocked = false;
   if (!list_empty (&sema->waiters))
     {
-      max_priority_el = list_min (&sema->waiters, thread_compare_priority,
-                                  NULL);
+      max_priority_el
+          = list_min (&sema->waiters, thread_compare_priority, NULL);
       max_priority_thread = list_entry (max_priority_el, struct thread, elem);
       list_remove (max_priority_el);
       thread_unblock (max_priority_thread);
@@ -301,8 +301,8 @@ lock_get_donation (struct lock *lock)
 
 /* Compare donatable priority between two locks. */
 bool
-lock_compare_max_donation (const struct list_elem *a,
-                           const struct list_elem *b, void *aux UNUSED)
+lock_compare_max_donation (const struct list_elem *a, const struct list_elem *b,
+                           void *aux UNUSED)
 {
   struct lock *l_a, *l_b;
   l_a = list_entry (a, struct lock, elem);
@@ -387,20 +387,20 @@ sema_less_priority (const struct list_elem *a, const struct list_elem *b,
     max_priority_a = 0;
   else
     {
-      max_priority_el_a = list_min (&sema_a->waiters, thread_compare_priority,
-                                    NULL);
-      max_priority_thread_a = list_entry (max_priority_el_a, struct thread,
-                                          elem);
+      max_priority_el_a
+          = list_min (&sema_a->waiters, thread_compare_priority, NULL);
+      max_priority_thread_a
+          = list_entry (max_priority_el_a, struct thread, elem);
       max_priority_a = max_priority_thread_a->priority;
     }
   if (list_empty (&sema_b->waiters))
     max_priority_b = 0;
   else
     {
-      max_priority_el_b = list_min (&sema_b->waiters, thread_compare_priority,
-                                    NULL);
-      max_priority_thread_b = list_entry (max_priority_el_b, struct thread,
-                                          elem);
+      max_priority_el_b
+          = list_min (&sema_b->waiters, thread_compare_priority, NULL);
+      max_priority_thread_b
+          = list_entry (max_priority_el_b, struct thread, elem);
       max_priority_b = max_priority_thread_b->priority;
     }
   return max_priority_a < max_priority_b;
@@ -475,8 +475,8 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED)
   if (!list_empty (&cond->waiters))
     {
       max_priority_el = list_max (&cond->waiters, sema_less_priority, NULL);
-      max_priority_sema = list_entry (max_priority_el, struct semaphore_elem,
-                                      elem);
+      max_priority_sema
+          = list_entry (max_priority_el, struct semaphore_elem, elem);
       list_remove (max_priority_el);
       sema_up (&max_priority_sema->semaphore);
     }

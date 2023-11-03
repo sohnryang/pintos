@@ -19,10 +19,8 @@
 #include <termios.h>
 #include <unistd.h>
 
-static void
-fail_io (const char *msg, ...)
-    __attribute__ ((noreturn))
-    __attribute__ ((format (printf, 1, 2)));
+static void fail_io (const char *msg, ...) __attribute__ ((noreturn))
+__attribute__ ((format (printf, 1, 2)));
 
 /* Prints MSG, formatting as with printf(),
    plus an error message based on errno,
@@ -158,8 +156,8 @@ relay (int sock)
             FD_SET (p->out, &write_fds);
         }
       sigemptyset (&empty_set);
-      retval = pselect (FD_SETSIZE, &read_fds, &write_fds, NULL, NULL,
-                        &empty_set);
+      retval
+          = pselect (FD_SETSIZE, &read_fds, &write_fds, NULL, NULL, &empty_set);
       if (retval < 0)
         {
           if (errno == EINTR)
@@ -266,9 +264,9 @@ main (int argc __attribute__ ((unused)), char *argv[])
   sun.sun_path[sizeof sun.sun_path - 1] = '\0';
   if (unlink (sun.sun_path) < 0 && errno != ENOENT)
     fail_io ("unlink");
-  if (bind (sock, (struct sockaddr *)&sun,
-            (offsetof (struct sockaddr_un, sun_path)
-             + strlen (sun.sun_path) + 1))
+  if (bind (
+          sock, (struct sockaddr *)&sun,
+          (offsetof (struct sockaddr_un, sun_path) + strlen (sun.sun_path) + 1))
       < 0)
     fail_io ("bind");
 

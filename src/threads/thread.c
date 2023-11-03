@@ -187,8 +187,7 @@ thread_print_stats (void)
    PRIORITY, but no actual priority scheduling is implemented.
    Priority scheduling is the goal of Problem 1-3. */
 tid_t
-thread_create (const char *name, int priority,
-               thread_func *function, void *aux)
+thread_create (const char *name, int priority, thread_func *function, void *aux)
 {
   struct thread *t;
   struct kernel_thread_frame *kf;
@@ -363,8 +362,8 @@ thread_yield (void)
 
   old_level = intr_disable ();
   if (cur != idle_thread)
-    list_insert_ordered (&ready_list, &cur->elem,
-                         thread_compare_priority, NULL);
+    list_insert_ordered (&ready_list, &cur->elem, thread_compare_priority,
+                         NULL);
   cur->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
@@ -449,8 +448,7 @@ thread_foreach (thread_action_func *func, void *aux)
 
   ASSERT (intr_get_level () == INTR_OFF);
 
-  for (e = list_begin (&all_list); e != list_end (&all_list);
-       e = list_next (e))
+  for (e = list_begin (&all_list); e != list_end (&all_list); e = list_next (e))
     {
       struct thread *t = list_entry (e, struct thread, allelem);
       func (t, aux);
@@ -518,8 +516,7 @@ thread_get_donation (struct thread *t)
 
   if (list_empty (&t->held_locks))
     return 0;
-  donation_max_el = list_max (&t->held_locks, lock_compare_max_donation,
-                              NULL);
+  donation_max_el = list_max (&t->held_locks, lock_compare_max_donation, NULL);
   donation_max_lock = list_entry (donation_max_el, struct lock, elem);
   return lock_get_donation (donation_max_lock);
 }
@@ -533,8 +530,7 @@ thread_fix_priority (struct thread *t, void *aux UNUSED)
   if (thread_mlfqs)
     {
       priority_new = PRI_MAX
-                     + fixed_to_int_round (
-                         fixed_div_by_int (-t->recent_cpu, 4))
+                     + fixed_to_int_round (fixed_div_by_int (-t->recent_cpu, 4))
                      - t->nice * 2;
       if (priority_new > PRI_MAX)
         priority_new = PRI_MAX;
@@ -565,9 +561,9 @@ thread_update_load_average (void)
   ready_threads = list_size (&ready_list);
   if (thread_current () != idle_thread)
     ready_threads++;
-  load_average = fixed_add (
-      fixed_div_by_int (fixed_mul_by_int (load_average, 59), 60),
-      fixed_div_by_int (fixed_from_int (ready_threads), 60));
+  load_average
+      = fixed_add (fixed_div_by_int (fixed_mul_by_int (load_average, 59), 60),
+                   fixed_div_by_int (fixed_from_int (ready_threads), 60));
 }
 
 void
@@ -578,11 +574,11 @@ thread_update_recent_cpu (struct thread *t, void *aux UNUSED)
   if (t == idle_thread)
     return;
 
-  decay = fixed_div (fixed_mul_by_int (load_average, 2),
-                     fixed_add (fixed_mul_by_int (load_average, 2),
-                                FIXED_UNIT));
-  t->recent_cpu = fixed_add (fixed_mul (decay, t->recent_cpu),
-                             fixed_from_int (t->nice));
+  decay
+      = fixed_div (fixed_mul_by_int (load_average, 2),
+                   fixed_add (fixed_mul_by_int (load_average, 2), FIXED_UNIT));
+  t->recent_cpu
+      = fixed_add (fixed_mul (decay, t->recent_cpu), fixed_from_int (t->nice));
 }
 
 void
@@ -621,8 +617,8 @@ thread_get_load_avg (void)
 int
 thread_get_recent_cpu (void)
 {
-  return fixed_to_int_round (fixed_mul_by_int (thread_current ()->recent_cpu,
-                                               100));
+  return fixed_to_int_round (
+      fixed_mul_by_int (thread_current ()->recent_cpu, 100));
 }
 
 #ifdef USERPROG
@@ -675,10 +671,7 @@ idle (void *idle_started_ UNUSED)
 
          See [IA32-v2a] "HLT", [IA32-v2b] "STI", and [IA32-v3a]
          7.11.1 "HLT Instruction". */
-      asm volatile ("sti; hlt"
-                    :
-                    :
-                    : "memory");
+      asm volatile ("sti; hlt" : : : "memory");
     }
 }
 
@@ -703,8 +696,7 @@ running_thread (void)
      down to the start of a page.  Because `struct thread' is
      always at the beginning of a page and the stack pointer is
      somewhere in the middle, this locates the curent thread. */
-  asm ("mov %%esp, %0"
-       : "=g"(esp));
+  asm ("mov %%esp, %0" : "=g"(esp));
   return pg_round_down (esp);
 }
 

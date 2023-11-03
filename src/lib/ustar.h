@@ -20,10 +20,10 @@ enum ustar_type
 /* Size of a ustar archive header, in bytes. */
 #define USTAR_HEADER_SIZE 512
 
-bool ustar_make_header (const char *file_name, enum ustar_type,
-                        int size, char header[USTAR_HEADER_SIZE]);
+bool ustar_make_header (const char *file_name, enum ustar_type, int size,
+                        char header[USTAR_HEADER_SIZE]);
 const char *ustar_parse_header (const char header[USTAR_HEADER_SIZE],
-                                const char **file_name,
-                                enum ustar_type *, int *size);
+                                const char **file_name, enum ustar_type *,
+                                int *size);
 
 #endif /* lib/ustar.h */

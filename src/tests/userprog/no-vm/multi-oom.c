@@ -39,8 +39,8 @@ static pid_t
 spawn_child (int c, enum child_termination_mode mode)
 {
   char child_cmd[128];
-  snprintf (child_cmd, sizeof child_cmd,
-            "%s %d %s", test_name, c, mode == CRASH ? "-k" : "");
+  snprintf (child_cmd, sizeof child_cmd, "%s %d %s", test_name, c,
+            mode == CRASH ? "-k" : "");
   return exec (child_cmd);
 }
 
@@ -163,8 +163,8 @@ main (int argc, char *argv[])
       if (i == 0)
         expected_depth = reached_depth;
       else if (expected_depth != reached_depth)
-        fail ("after run %d/%d, expected depth %d, actual depth %d.",
-              i, howmany, expected_depth, reached_depth);
+        fail ("after run %d/%d, expected depth %d, actual depth %d.", i,
+              howmany, expected_depth, reached_depth);
       ASSERT (expected_depth == reached_depth);
     }
 

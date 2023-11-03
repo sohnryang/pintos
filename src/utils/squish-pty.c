@@ -16,10 +16,8 @@
 #include <termios.h>
 #include <unistd.h>
 
-static void
-fail_io (const char *msg, ...)
-    __attribute__ ((noreturn))
-    __attribute__ ((format (printf, 1, 2)));
+static void fail_io (const char *msg, ...) __attribute__ ((noreturn))
+__attribute__ ((format (printf, 1, 2)));
 
 /* Prints MSG, formatting as with printf(),
    plus an error message based on errno,

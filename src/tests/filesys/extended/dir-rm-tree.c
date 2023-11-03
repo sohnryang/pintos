@@ -25,8 +25,8 @@ remove_tree (int at, int bt, int ct, int dt)
   char try[128];
   int a, b, c, d;
 
-  msg ("removing /0/0/0/0 through /%d/%d/%d/%d...",
-       at - 1, bt - 1, ct - 1, dt - 1);
+  msg ("removing /0/0/0/0 through /%d/%d/%d/%d...", at - 1, bt - 1, ct - 1,
+       dt - 1);
   quiet = true;
   for (a = 0; a < at; a++)
     {

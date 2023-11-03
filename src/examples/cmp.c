@@ -50,9 +50,8 @@ main (int argc, char *argv[])
         if (buffer[0][i] != buffer[1][i])
           {
             printf ("Byte %d is %02hhx ('%c') in %s but %02hhx ('%c') in %s\n",
-                    pos + i,
-                    buffer[0][i], buffer[0][i], argv[1],
-                    buffer[1][i], buffer[1][i], argv[2]);
+                    pos + i, buffer[0][i], buffer[0][i], argv[1], buffer[1][i],
+                    buffer[1][i], argv[2]);
             return EXIT_FAILURE;
           }
 

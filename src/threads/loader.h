@@ -13,10 +13,11 @@
 #define LOADER_PHYS_BASE 0xc0000000 /* 3 GB. */
 
 /* Important loader physical addresses. */
-#define LOADER_SIG (LOADER_END - LOADER_SIG_LEN)          /* 0xaa55 BIOS signature. */
-#define LOADER_PARTS (LOADER_SIG - LOADER_PARTS_LEN)      /* Partition table. */
-#define LOADER_ARGS (LOADER_PARTS - LOADER_ARGS_LEN)      /* Command-line args. */
-#define LOADER_ARG_CNT (LOADER_ARGS - LOADER_ARG_CNT_LEN) /* Number of args. */
+#define LOADER_SIG (LOADER_END - LOADER_SIG_LEN) /* 0xaa55 BIOS signature. */
+#define LOADER_PARTS (LOADER_SIG - LOADER_PARTS_LEN) /* Partition table. */
+#define LOADER_ARGS (LOADER_PARTS - LOADER_ARGS_LEN) /* Command-line args. */
+#define LOADER_ARG_CNT (LOADER_ARGS - LOADER_ARG_CNT_LEN) /* Number of args.   \
+                                                           */
 
 /* Sizes of loader data structures. */
 #define LOADER_SIG_LEN 2

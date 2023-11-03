@@ -117,10 +117,7 @@ shutdown_power_off (void)
   /* This will power off a VMware VM if "gui.exitOnCLIHLT = TRUE"
      is set in its configuration file.  (The "pintos" script does
      that automatically.)  */
-  asm volatile ("cli; hlt"
-                :
-                :
-                : "memory");
+  asm volatile ("cli; hlt" : : : "memory");
 
   /* None of those worked. */
   printf ("still running...\n");

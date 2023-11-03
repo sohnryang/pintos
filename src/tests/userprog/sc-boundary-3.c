@@ -15,8 +15,6 @@ test_main (void)
   *p = 100;
 
   /* Invoke the system call. */
-  asm volatile ("movl %0, %%esp; int $0x30"
-                :
-                : "g"(p));
+  asm volatile ("movl %0, %%esp; int $0x30" : : "g"(p));
   fail ("should have killed process");
 }

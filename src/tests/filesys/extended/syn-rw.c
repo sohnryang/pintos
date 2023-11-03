@@ -27,8 +27,8 @@ test_main (void)
   quiet = true;
   for (ofs = 0; ofs < BUF_SIZE; ofs += CHUNK_SIZE)
     CHECK (write (fd, buf + ofs, CHUNK_SIZE) > 0,
-           "write %d bytes at offset %zu in \"%s\"",
-           (int)CHUNK_SIZE, ofs, file_name);
+           "write %d bytes at offset %zu in \"%s\"", (int)CHUNK_SIZE, ofs,
+           file_name);
   quiet = false;
 
   wait_children (children, CHILD_CNT);

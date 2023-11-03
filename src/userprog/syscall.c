@@ -39,16 +39,16 @@ syscall_init (void)
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall\n");
 }
 
-#define pop_arg(TYPE, OUT, SP)                                     \
-  ({                                                               \
-    TYPE *arg_ptr;                                                 \
-    void *dst;                                                     \
-    arg_ptr = (TYPE *)(SP);                                        \
-    dst = checked_memcpy_from_user (&OUT, arg_ptr, sizeof (TYPE)); \
-    if (dst == NULL)                                               \
-      process_trigger_exit (-1);                                   \
-    arg_ptr++;                                                     \
-    SP = arg_ptr;                                                  \
+#define pop_arg(TYPE, OUT, SP)                                                 \
+  ({                                                                           \
+    TYPE *arg_ptr;                                                             \
+    void *dst;                                                                 \
+    arg_ptr = (TYPE *)(SP);                                                    \
+    dst = checked_memcpy_from_user (&OUT, arg_ptr, sizeof (TYPE));             \
+    if (dst == NULL)                                                           \
+      process_trigger_exit (-1);                                               \
+    arg_ptr++;                                                                 \
+    SP = arg_ptr;                                                              \
   })
 
 /* Handle system call. */
@@ -57,18 +57,9 @@ syscall_handler (struct intr_frame *f)
 {
   int syscall_id;
   int (*syscall_table[13]) (void *) = {
-    syscall_halt,
-    syscall_exit,
-    syscall_exec,
-    syscall_wait,
-    syscall_create,
-    syscall_remove,
-    syscall_open,
-    syscall_filesize,
-    syscall_read,
-    syscall_write,
-    syscall_seek,
-    syscall_tell,
+    syscall_halt,   syscall_exit,   syscall_exec, syscall_wait,
+    syscall_create, syscall_remove, syscall_open, syscall_filesize,
+    syscall_read,   syscall_write,  syscall_seek, syscall_tell,
     syscall_close,
   };
   void *sp = f->esp;
@@ -323,9 +314,8 @@ syscall_read (void *sp)
   thread_acquire_fs_lock ();
   for (read_len = 0; read_len < length; read_len += READ_BUFSIZE)
     {
-      copy_len = length - read_len < READ_BUFSIZE
-                     ? length - read_len
-                     : READ_BUFSIZE;
+      copy_len
+          = length - read_len < READ_BUFSIZE ? length - read_len : READ_BUFSIZE;
       file_read_len += file_read (fd_ctx->file, copied_buf, copy_len);
       dst = checked_memcpy_to_user (buffer + read_len, copied_buf, copy_len);
       if (dst == NULL)
@@ -366,9 +356,8 @@ syscall_write (void *sp)
     {
       for (written = 0; written < length; written += WRITE_BUFSIZE)
         {
-          copy_len = length - written < WRITE_BUFSIZE
-                         ? length - written
-                         : WRITE_BUFSIZE;
+          copy_len = length - written < WRITE_BUFSIZE ? length - written
+                                                      : WRITE_BUFSIZE;
           dst = checked_memcpy_from_user (copied_buf, buffer + written,
                                           copy_len);
           if (dst == NULL)
@@ -386,11 +375,9 @@ syscall_write (void *sp)
   thread_acquire_fs_lock ();
   for (written = 0; written < length; written += WRITE_BUFSIZE)
     {
-      copy_len = length - written < WRITE_BUFSIZE
-                     ? length - written
-                     : WRITE_BUFSIZE;
-      dst = checked_memcpy_from_user (copied_buf, buffer + written,
-                                      copy_len);
+      copy_len
+          = length - written < WRITE_BUFSIZE ? length - written : WRITE_BUFSIZE;
+      dst = checked_memcpy_from_user (copied_buf, buffer + written, copy_len);
       if (dst == NULL)
         {
           thread_release_fs_lock ();

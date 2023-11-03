@@ -139,21 +139,20 @@ static const struct integer_base base_x = { 16, "0123456789abcdef", 'x', 4 };
 static const struct integer_base base_X = { 16, "0123456789ABCDEF", 'X', 4 };
 
 static const char *parse_conversion (const char *format,
-                                     struct printf_conversion *,
-                                     va_list *);
+                                     struct printf_conversion *, va_list *);
 static void format_integer (uintmax_t value, bool is_signed, bool negative,
                             const struct integer_base *,
                             const struct printf_conversion *,
                             void (*output) (char, void *), void *aux);
-static void output_dup (char ch, size_t cnt,
-                        void (*output) (char, void *), void *aux);
+static void output_dup (char ch, size_t cnt, void (*output) (char, void *),
+                        void *aux);
 static void format_string (const char *string, int length,
                            struct printf_conversion *,
                            void (*output) (char, void *), void *aux);
 
 void
-__vprintf (const char *format, va_list args,
-           void (*output) (char, void *), void *aux)
+__vprintf (const char *format, va_list args, void (*output) (char, void *),
+           void *aux)
 {
   for (; *format != '\0'; format++)
     {
@@ -218,8 +217,8 @@ __vprintf (const char *format, va_list args,
                 NOT_REACHED ();
               }
 
-            format_integer (value < 0 ? -value : value,
-                            true, value < 0, &base_d, &c, output, aux);
+            format_integer (value < 0 ? -value : value, true, value < 0,
+                            &base_d, &c, output, aux);
           }
           break;
 
@@ -316,8 +315,8 @@ __vprintf (const char *format, va_list args,
             void *p = va_arg (args, void *);
 
             c.flags = POUND;
-            format_integer ((uintptr_t)p, false, false,
-                            &base_x, &c, output, aux);
+            format_integer ((uintptr_t)p, false, false, &base_x, &c, output,
+                            aux);
           }
           break;
 
@@ -475,8 +474,7 @@ not_a_flag:
    are in C. */
 static void
 format_integer (uintmax_t value, bool is_signed, bool negative,
-                const struct integer_base *b,
-                const struct printf_conversion *c,
+                const struct integer_base *b, const struct printf_conversion *c,
                 void (*output) (char, void *), void *aux)
 {
   char buf[64], *cp; /* Buffer and current position. */
@@ -565,8 +563,7 @@ output_dup (char ch, size_t cnt, void (*output) (char, void *), void *aux)
    the conversion specified in C.  Writes output to OUTPUT with
    auxiliary data AUX. */
 static void
-format_string (const char *string, int length,
-               struct printf_conversion *c,
+format_string (const char *string, int length, struct printf_conversion *c,
                void (*output) (char, void *), void *aux)
 {
   int i;
@@ -581,8 +578,7 @@ format_string (const char *string, int length,
 /* Wrapper for __vprintf() that converts varargs into a
    va_list. */
 void
-__printf (const char *format,
-          void (*output) (char, void *), void *aux, ...)
+__printf (const char *format, void (*output) (char, void *), void *aux, ...)
 {
   va_list args;
 
@@ -619,8 +615,7 @@ hex_dump (uintptr_t ofs, const void *buf_, size_t size, bool ascii)
       for (i = 0; i < start; i++)
         printf ("   ");
       for (; i < end; i++)
-        printf ("%02hhx%c",
-                buf[i - start], i == per_line / 2 - 1 ? '-' : ' ');
+        printf ("%02hhx%c", buf[i - start], i == per_line / 2 - 1 ? '-' : ' ');
       if (ascii)
         {
           for (; i < per_line; i++)
@@ -629,8 +624,7 @@ hex_dump (uintptr_t ofs, const void *buf_, size_t size, bool ascii)
           for (i = 0; i < start; i++)
             printf (" ");
           for (; i < end; i++)
-            printf ("%c",
-                    isprint (buf[i - start]) ? buf[i - start] : '.');
+            printf ("%c", isprint (buf[i - start]) ? buf[i - start] : '.');
           for (; i < per_line; i++)
             printf (" ");
           printf ("|");
