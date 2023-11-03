@@ -1,5 +1,5 @@
-#ifndef VM_FRAMETABLE
-#define VM_FRAMETABLE
+#ifndef VM_FRAMETABLE_H
+#define VM_FRAMETABLE_H
 
 #include <stdbool.h>
 

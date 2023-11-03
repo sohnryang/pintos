@@ -1,5 +1,5 @@
-#ifndef VM_FAULT
-#define VM_FAULT
+#ifndef VM_FAULT_H
+#define VM_FAULT_H
 
 #include <stdbool.h>
 

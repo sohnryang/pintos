@@ -1,5 +1,5 @@
-#ifndef VM_FRAME
-#define VM_FRAME
+#ifndef VM_FRAME_H
+#define VM_FRAME_H
 
 #include <hash.h>
 #include <list.h>
