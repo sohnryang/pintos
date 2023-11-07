@@ -315,4 +315,26 @@ pagedir_is_user (uint32_t *pd, const void *vpage)
   uint32_t *pte = lookup_page (pd, vpage, false);
   return pte != NULL && (*pte & PTE_U) != 0;
 }
+
+/* Set the stub bit of given `vpage` in `pd` according to `rw`. */
+void
+pagedir_set_stub (uint32_t *pd, const void *vpage, bool rw)
+{
+  uint32_t *pte = lookup_page (pd, vpage, false);
+  if (pte != NULL)
+    {
+      if (rw)
+        *pte |= PTE_STUB;
+      else
+        *pte &= ~(uint32_t)PTE_W;
+    }
+}
+
+/* Check if given `vpage` in `pd` is stub page. */
+bool
+pagedir_is_stub (uint32_t *pd, const void *vpage)
+{
+  uint32_t *pte = lookup_page (pd, vpage, false);
+  return pte != NULL && (*pte & PTE_STUB) != 0;
+}
 #endif
