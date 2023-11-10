@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "hash.h"
 #include "list.h"
 #include "threads/synch.h"
 #include "userprog/gdt.h"
@@ -23,8 +22,7 @@
 #include "threads/vaddr.h"
 
 #ifdef VM
-#include "vm/frame.h"
-#include "vm/frametable.h"
+#include "vm/vmm.h"
 #endif
 
 static thread_func start_process NO_RETURN;
@@ -207,7 +205,7 @@ start_process (void *file_name_)
   prog_name = argv[0];
 
 #ifdef VM
-  success = frametable_init ();
+  success = vmm_init ();
   if (!success)
     {
       palloc_free_page (file_name_copy);
@@ -306,7 +304,7 @@ process_exit (void)
   thread_release_fs_lock ();
 
 #ifdef VM
-  frametable_destroy ();
+  vmm_destroy ();
 #endif
 
   /* Destroy the current process's page directory and switch back
@@ -612,11 +610,8 @@ done:
 
 /* load() helpers. */
 
+#ifndef VM
 static bool install_page (void *upage, void *kpage, bool writable);
-
-#ifdef VM
-static bool install_page_stub (void *upage, bool writable);
-static void disable_write_to_page (void *upage);
 #endif
 
 /* Checks whether PHDR describes a valid, loadable segment in
@@ -682,11 +677,20 @@ static bool
 load_segment (struct file *file, off_t ofs, uint8_t *upage, uint32_t read_bytes,
               uint32_t zero_bytes, bool writable)
 {
+#ifdef VM
+  uint32_t pos;
+#endif
+
   ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
   ASSERT (pg_ofs (upage) == 0);
   ASSERT (ofs % PGSIZE == 0);
 
+#ifndef VM
   file_seek (file, ofs);
+#else
+  pos = 0;
+#endif
+
   while (read_bytes > 0 || zero_bytes > 0)
     {
       /* Calculate how to fill this page.
@@ -716,16 +720,10 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage, uint32_t read_bytes,
           return false;
         }
 #else
-      if (!install_page_stub (upage, true))
+      if (!vmm_create_file_map (upage, file, writable, ofs + pos,
+                                page_read_bytes))
         return false;
-
-      /* Load this page. */
-      if (file_read (file, upage, page_read_bytes) != (int)page_read_bytes)
-        return false;
-      memset (upage + page_read_bytes, 0, page_zero_bytes);
-
-      if (!writable)
-        disable_write_to_page (upage);
+      pos += page_read_bytes;
 #endif
 
       /* Advance. */
@@ -745,32 +743,12 @@ setup_stack (void **esp)
   bool success = false;
   void *upage;
 
-#ifdef VM
-  struct frame *frame;
-  struct thread *cur;
-#endif
-
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL)
     {
       upage = ((uint8_t *)PHYS_BASE) - PGSIZE;
 #ifdef VM
-      if (!install_page_stub (upage, true))
-        return false;
-
-      frame = malloc (sizeof (struct frame));
-      if (frame == NULL)
-        return false;
-
-      frame_init (frame, kpage);
-      if (!frame_add_upage_mapping (frame, upage))
-        return false;
-
-      cur = thread_current ();
-      hash_insert (&cur->frames, &frame->elem);
-      pagedir_set_page (cur->pagedir, upage, kpage, true);
-
-      success = true;
+      success = vmm_create_anonymous (upage, true);
 #else
       success = install_page (upage, kpage, true);
 #endif
@@ -782,6 +760,7 @@ setup_stack (void **esp)
   return success;
 }
 
+#ifndef VM
 /* Adds a mapping from user virtual address UPAGE to kernel
    virtual address KPAGE to the page table.
    If WRITABLE is true, the user process may modify the page;
@@ -800,24 +779,5 @@ install_page (void *upage, void *kpage, bool writable)
      address, then map our page there. */
   return (pagedir_get_page (t->pagedir, upage) == NULL
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
-}
-
-#ifdef VM
-/* Add a non-mapped user page `upage` to page table. */
-static bool
-install_page_stub (void *upage, bool writable)
-{
-  struct thread *cur = thread_current ();
-
-  return (pagedir_get_page (cur->pagedir, upage) == NULL
-          && pagedir_set_page_stub (cur->pagedir, upage, writable));
-}
-
-static void
-disable_write_to_page (void *upage)
-{
-  struct thread *cur = thread_current ();
-
-  pagedir_set_writable (cur->pagedir, upage, false);
 }
 #endif
