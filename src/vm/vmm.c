@@ -16,6 +16,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#define STACK_GROW_LIMIT 32
+#define STACK_MAXSIZE (8 << 20)
+
 /* Add a non-mapped user page `upage` to page table. */
 static bool
 install_page_stub (void *upage, bool writable)
@@ -190,4 +193,17 @@ vmm_handle_not_present (void *fault_addr)
     return false;
 
   return true;
+}
+
+/* Check if the page fault in `fault_addr` is caused by insufficient stack size
+   using the given `esp`, and grow the stack if possible. */
+bool
+vmm_grow_stack (void *fault_addr, void *esp)
+{
+  if (esp - fault_addr > STACK_GROW_LIMIT)
+    return false;
+  if (fault_addr < PHYS_BASE - STACK_MAXSIZE)
+    return false;
+
+  return vmm_create_anonymous (pg_round_down (fault_addr), true);
 }

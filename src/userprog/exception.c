@@ -167,8 +167,13 @@ page_fault (struct intr_frame *f)
   else if (user)
     process_trigger_exit (-1);
 #else
-  if (not_present && vmm_handle_not_present (fault_addr))
-    return;
+  if (not_present)
+    {
+      if (vmm_handle_not_present (fault_addr))
+        return;
+      if (vmm_grow_stack (fault_addr, f->esp))
+        return;
+    }
 
   if (user)
     process_trigger_exit (-1);
