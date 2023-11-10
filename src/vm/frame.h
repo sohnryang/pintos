@@ -8,7 +8,7 @@
 /* Physical frame. */
 struct frame
 {
-  void *paddr; /* Physical address of frame. */
+  void *kpage; /* Address to a page from user pool. */
 
   struct list mappings;  /* List of mappings. */
   struct hash_elem elem; /* Element for hash table. */
