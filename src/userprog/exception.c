@@ -8,7 +8,7 @@
 #include "userprog/process.h"
 
 #ifdef VM
-#include "vm/fault.h"
+#include "vm/vmm.h"
 #endif
 
 /* Number of page faults processed. */
@@ -167,7 +167,7 @@ page_fault (struct intr_frame *f)
   else if (user)
     process_trigger_exit (-1);
 #else
-  if (not_present && fault_handle_not_present (fault_addr))
+  if (not_present && vmm_handle_not_present (fault_addr))
     return;
 
   if (user)

@@ -3,6 +3,7 @@
 #include "filesys/file.h"
 #include "stddef.h"
 #include "threads/malloc.h"
+#include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "userprog/pagedir.h"
@@ -167,5 +168,26 @@ vmm_deserialize_frame (struct frame *frame, void *kpage)
   // TODO: add handling for swapped-out pages
 
   frame->kpage = kpage;
+  return true;
+}
+
+/* Handle page faults caused by non-present page access. */
+bool
+vmm_handle_not_present (void *fault_addr)
+{
+  void *kpage, *upage;
+  struct frame *frame;
+
+  kpage = palloc_get_page (PAL_USER);
+  if (kpage == NULL) // TODO: implement swapping
+    return false;
+
+  upage = pg_round_down (fault_addr);
+  frame = vmm_lookup_frame (upage);
+  if (frame == NULL)
+    return false;
+  if (!vmm_deserialize_frame (frame, kpage))
+    return false;
+
   return true;
 }
