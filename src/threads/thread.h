@@ -150,7 +150,8 @@ struct thread
 #endif
 
 #ifdef VM
-  struct hash frames; /* Frame table. */
+  struct list frames; /* Frame table. */
+  struct hash mmaps;  /* Mapping table. */
 #endif
 
   /* Owned by thread.c. */
