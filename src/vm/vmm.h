@@ -17,5 +17,6 @@ bool vmm_create_anonymous (void *, bool);
 bool vmm_create_file_map (void *, struct file *, bool, off_t, uint32_t);
 
 struct frame *vmm_lookup_frame (void *);
+bool vmm_deserialize_frame (struct frame *, void *);
 
 #endif

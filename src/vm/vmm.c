@@ -4,6 +4,7 @@
 #include "stddef.h"
 #include "threads/malloc.h"
 #include "threads/thread.h"
+#include "threads/vaddr.h"
 #include "userprog/pagedir.h"
 #include "vm/frame.h"
 #include "vm/mmap.h"
@@ -131,4 +132,40 @@ vmm_lookup_frame (void *upage)
   el = hash_find (&cur->mmaps, &info.map_elem);
 
   return el != NULL ? hash_entry (el, struct mmap_info, map_elem)->frame : NULL;
+}
+
+/* Deserialize frame from disk. */
+bool
+vmm_deserialize_frame (struct frame *frame, void *kpage)
+{
+  struct thread *cur;
+  struct list_elem *el;
+  struct mmap_info *info;
+  bool read_from_file;
+  size_t zero_bytes;
+
+  cur = thread_current ();
+  read_from_file = false;
+  for (el = list_begin (&frame->mappings); el != list_end (&frame->mappings);
+       el = list_next (el))
+    {
+      info = list_entry (el, struct mmap_info, elem);
+      if (!pagedir_set_page (cur->pagedir, info->upage, kpage, info->writable))
+        return false;
+      if (info->file != NULL)
+        {
+          ASSERT (!read_from_file);
+
+          file_seek (info->file, info->offset);
+          file_read (info->file, kpage, info->mapped_size);
+          zero_bytes = PGSIZE - info->mapped_size;
+          memset (kpage + info->mapped_size, 0, zero_bytes);
+          read_from_file = true;
+        }
+    }
+
+  // TODO: add handling for swapped-out pages
+
+  frame->kpage = kpage;
+  return true;
 }
