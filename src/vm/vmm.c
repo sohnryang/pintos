@@ -116,3 +116,19 @@ vmm_create_file_map (void *upage, struct file *file, bool writable,
     }
   return true;
 }
+
+/* Find page frame corresponding to `upage`. */
+struct frame *
+vmm_lookup_frame (void *upage)
+{
+  struct mmap_info info;
+  struct hash_elem *el;
+  struct thread *cur;
+
+  info.upage = upage;
+
+  cur = thread_current ();
+  el = hash_find (&cur->mmaps, &info.map_elem);
+
+  return el != NULL ? hash_entry (el, struct mmap_info, map_elem)->frame : NULL;
+}
