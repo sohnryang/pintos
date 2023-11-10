@@ -5,14 +5,6 @@
 #include <list.h>
 #include <stdbool.h>
 
-/* Object mapped to page frame. */
-struct mapping
-{
-  void *upage; /* Virtual address to user page. */
-
-  struct list_elem elem; /* Element for linked list. */
-};
-
 /* Physical frame. */
 struct frame
 {
