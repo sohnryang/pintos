@@ -172,6 +172,12 @@ page_fault (struct intr_frame *f)
 
   if (user)
     process_trigger_exit (-1);
+  else if (fault_addr < PHYS_BASE)
+    {
+      f->eip = (void (*) (void))f->eax;
+      f->eax = 0xffffffff;
+      return;
+    }
 #endif
 
   /* To implement virtual memory, delete the rest of the function

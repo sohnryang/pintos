@@ -1,21 +1,12 @@
 #include "checked_user_mem.h"
 
 #include <stdbool.h>
-#include "threads/thread.h"
 #include "threads/vaddr.h"
-#include "userprog/pagedir.h"
 
 static bool
 is_valid_user_ptr (const void *uaddr)
 {
-#ifdef VM
-  struct thread *cur;
-
-  cur = thread_current ();
-  return pagedir_is_user (cur->pagedir, pg_round_down (uaddr));
-#else
   return uaddr < PHYS_BASE;
-#endif
 }
 
 static bool
@@ -33,15 +24,11 @@ checked_copy_byte_from_user (const uint8_t *usrc)
   if (!is_valid_user_ptr (usrc))
     return -1;
 
-#ifdef VM
-  res = *usrc;
-#else
   asm ("movl $1f, %0\n\t"
        "movzbl %1, %0\n\t"
        "1:"
        : "=&a"(res)
        : "m"(*usrc));
-#endif
 
   return res;
 }
@@ -49,24 +36,17 @@ checked_copy_byte_from_user (const uint8_t *usrc)
 bool
 checked_copy_byte_to_user (uint8_t *udst, uint8_t byte)
 {
-#ifndef VM
   int error_code;
-#endif
 
   if (!is_valid_user_ptr (udst))
     return false;
 
-#ifdef VM
-  *udst = byte;
-  return true;
-#else
   asm ("movl $1f, %0\n\t"
        "movb %b2, %1\n\t"
        "1:"
        : "=&a"(error_code), "=m"(*udst)
        : "q"(byte));
   return error_code != -1;
-#endif
 }
 
 /* Copy `n` bytes from `usrc` to `dst`. `usrc` must be pointing to userspace
