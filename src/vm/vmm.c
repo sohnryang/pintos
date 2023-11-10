@@ -7,6 +7,7 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "userprog/pagedir.h"
+#include "userprog/syscall.h"
 #include "vm/frame.h"
 #include "vm/mmap.h"
 
@@ -168,9 +169,13 @@ vmm_deserialize_frame (struct frame *frame, void *kpage)
         }
     }
 
+  if (frame->is_stub && !read_from_file)
+    memset (kpage, 0, PGSIZE);
+
   // TODO: add handling for swapped-out pages
 
   frame->kpage = kpage;
+  frame->is_stub = false;
   return true;
 }
 
@@ -181,14 +186,15 @@ vmm_handle_not_present (void *fault_addr)
   void *kpage, *upage;
   struct frame *frame;
 
-  kpage = palloc_get_page (PAL_USER);
-  if (kpage == NULL) // TODO: implement swapping
-    return false;
-
   upage = pg_round_down (fault_addr);
   frame = vmm_lookup_frame (upage);
   if (frame == NULL)
     return false;
+
+  kpage = palloc_get_page (PAL_USER);
+  if (kpage == NULL) // TODO: implement swapping
+    return false;
+
   if (!vmm_deserialize_frame (frame, kpage))
     return false;
 
@@ -198,9 +204,11 @@ vmm_handle_not_present (void *fault_addr)
 /* Check if the page fault in `fault_addr` is caused by insufficient stack size
    using the given `esp`, and grow the stack if possible. */
 bool
-vmm_grow_stack (void *fault_addr, void *esp)
+vmm_grow_stack (void *fault_addr, void *esp, bool user)
 {
-  if (esp - fault_addr > STACK_GROW_LIMIT)
+  if (user && esp - fault_addr > STACK_GROW_LIMIT)
+    return false;
+  if (!user && syscall_user_esp - fault_addr > STACK_GROW_LIMIT)
     return false;
   if (fault_addr < PHYS_BASE - STACK_MAXSIZE)
     return false;

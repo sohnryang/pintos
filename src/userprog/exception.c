@@ -171,7 +171,7 @@ page_fault (struct intr_frame *f)
     {
       if (vmm_handle_not_present (fault_addr))
         return;
-      if (vmm_grow_stack (fault_addr, f->esp))
+      if (vmm_grow_stack (fault_addr, f->esp, user))
         return;
     }
 
