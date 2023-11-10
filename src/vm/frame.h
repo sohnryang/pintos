@@ -10,13 +10,13 @@ struct frame
 {
   void *kpage; /* Address to a page from user pool. */
 
+  bool is_stub;        /* Is this frame a stub frame? */
+  bool is_swapped_out; /* Is this frame swapped out? */
+
   struct list mappings;  /* List of mappings. */
   struct list_elem elem; /* Element for frame table. */
 };
 
 void frame_init (struct frame *);
-
-void frame_init (struct frame *, void *);
-bool frame_add_upage_mapping (struct frame *, void *);
 
 #endif
