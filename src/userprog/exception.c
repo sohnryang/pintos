@@ -167,10 +167,11 @@ page_fault (struct intr_frame *f)
   else if (user)
     process_trigger_exit (-1);
 #else
+  if (not_present && fault_handle_not_present (fault_addr))
+    return;
+
   if (user)
     process_trigger_exit (-1);
-  else if (not_present && fault_handle_not_present (fault_addr))
-    return;
 #endif
 
   /* To implement virtual memory, delete the rest of the function
