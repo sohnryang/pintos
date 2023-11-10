@@ -33,10 +33,13 @@ static int syscall_seek (void *);
 static int syscall_tell (void *);
 static int syscall_close (void *);
 
+void *syscall_user_esp;
+
 void
 syscall_init (void)
 {
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall\n");
+  syscall_user_esp = NULL;
 }
 
 #define pop_arg(TYPE, OUT, SP)                                                 \
@@ -63,10 +66,12 @@ syscall_handler (struct intr_frame *f)
     syscall_close,
   };
   void *sp = f->esp;
+  syscall_user_esp = f->esp;
 
   pop_arg (int, syscall_id, sp);
 
   f->eax = syscall_table[syscall_id](sp);
+  syscall_user_esp = NULL;
 }
 
 /* System call handler for `HALT`. */
