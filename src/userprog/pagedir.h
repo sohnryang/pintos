@@ -17,11 +17,6 @@ void pagedir_activate (uint32_t *pd);
 
 #ifdef VM
 bool pagedir_set_page_stub (uint32_t *pd, void *upage, bool rw);
-bool pagedir_is_writable (uint32_t *pd, const void *upage);
-void pagedir_set_writable (uint32_t *pd, const void *upage, bool rw);
-bool pagedir_is_user (uint32_t *pd, const void *upage);
-void pagedir_set_stub (uint32_t *pd, const void *upage, bool rw);
-bool pagedir_is_stub (uint32_t *pd, const void *upage);
 #endif
 
 #endif /* userprog/pagedir.h */
