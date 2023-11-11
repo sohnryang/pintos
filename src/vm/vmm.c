@@ -47,10 +47,19 @@ void
 vmm_destroy (void)
 {
   struct thread *cur;
+  struct list_elem *el;
+  struct frame *frame;
 
   cur = thread_current ();
 
   hash_destroy (&cur->mmaps, mmap_info_destruct);
+
+  while (!list_empty (&cur->frames))
+    {
+      el = list_pop_front (&cur->frames);
+      frame = list_entry (el, struct frame, elem);
+      free (frame);
+    }
 }
 
 /* Create a new frame and map `info` to it. */
