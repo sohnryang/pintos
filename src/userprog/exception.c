@@ -8,6 +8,7 @@
 #include "userprog/process.h"
 
 #ifdef VM
+#include "userprog/syscall.h"
 #include "vm/vmm.h"
 #endif
 
@@ -171,7 +172,9 @@ page_fault (struct intr_frame *f)
     {
       if (vmm_handle_not_present (fault_addr))
         return;
-      if (vmm_grow_stack (fault_addr, f->esp, user))
+      if (user && vmm_grow_stack (fault_addr, f->esp))
+        return;
+      else if (!user && vmm_grow_stack (fault_addr, syscall_user_esp))
         return;
     }
 

@@ -20,6 +20,6 @@ struct frame *vmm_lookup_frame (void *);
 bool vmm_deserialize_frame (struct frame *, void *);
 
 bool vmm_handle_not_present (void *);
-bool vmm_grow_stack (void *, void *, bool);
+bool vmm_grow_stack (void *, void *);
 
 #endif

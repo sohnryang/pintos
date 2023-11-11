@@ -7,7 +7,6 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "userprog/pagedir.h"
-#include "userprog/syscall.h"
 #include "vm/frame.h"
 #include "vm/mmap.h"
 
@@ -213,11 +212,9 @@ vmm_handle_not_present (void *fault_addr)
 /* Check if the page fault in `fault_addr` is caused by insufficient stack size
    using the given `esp`, and grow the stack if possible. */
 bool
-vmm_grow_stack (void *fault_addr, void *esp, bool user)
+vmm_grow_stack (void *fault_addr, void *esp)
 {
-  if (user && esp - fault_addr > STACK_GROW_LIMIT)
-    return false;
-  if (!user && syscall_user_esp - fault_addr > STACK_GROW_LIMIT)
+  if (esp - fault_addr > STACK_GROW_LIMIT)
     return false;
   if (fault_addr < PHYS_BASE - STACK_MAXSIZE)
     return false;
