@@ -152,6 +152,8 @@ struct thread
 #ifdef VM
   struct list frames; /* Frame table. */
   struct hash mmaps;  /* Mapping table. */
+
+  void *esp_before_syscall; /* Stack pointer right before syscall. */
 #endif
 
   /* Owned by thread.c. */
