@@ -89,7 +89,7 @@ vmm_map_to_new_frame (struct mmap_info *info)
 }
 
 /* Create an anonymous mapping for `upage`. */
-bool
+struct mmap_info *
 vmm_create_anonymous (void *upage, bool writable)
 {
   struct mmap_info *info;
@@ -98,19 +98,19 @@ vmm_create_anonymous (void *upage, bool writable)
 
   info = malloc (sizeof (struct mmap_info));
   if (info == NULL)
-    return false;
+    return NULL;
   mmap_init_anonymous (info, upage, writable);
 
   if (!vmm_map_to_new_frame (info))
     {
       free (info);
-      return false;
+      return NULL;
     }
-  return true;
+  return info;
 }
 
 /* Create a file mapping for `file` to `upage`. */
-bool
+struct mmap_info *
 vmm_create_file_map (void *upage, struct file *file, bool writable,
                      off_t offset, uint32_t size)
 {
@@ -120,15 +120,15 @@ vmm_create_file_map (void *upage, struct file *file, bool writable,
 
   info = malloc (sizeof (struct mmap_info));
   if (info == NULL)
-    return false;
+    return NULL;
   mmap_init_file_map (info, upage, file, writable, offset, size);
 
   if (!vmm_map_to_new_frame (info))
     {
       free (info);
-      return false;
+      return NULL;
     }
-  return true;
+  return info;
 }
 
 /* Find page frame corresponding to `upage`. */
