@@ -150,8 +150,9 @@ struct thread
 #endif
 
 #ifdef VM
-  struct list frames; /* Frame table. */
-  struct hash mmaps;  /* Mapping table. */
+  struct list frames;      /* Frame table. */
+  struct hash mmaps;       /* Mapping table. */
+  struct list mmap_blocks; /* List of mmap_user_block. */
 
   void *esp_before_syscall; /* Stack pointer right before syscall. */
 #endif

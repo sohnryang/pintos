@@ -3,6 +3,7 @@
 
 #include "filesys/file.h"
 #include "filesys/off_t.h"
+#include "user/syscall.h"
 #include "vm/frame.h"
 
 #include <hash.h>
@@ -25,6 +26,19 @@ struct mmap_info
   struct frame *frame;   /* Pointer to frame object. */
 
   struct hash_elem map_elem; /* Element for mapping table. */
+
+  struct list_elem chunk_elem; /* Element for chunks list. */
+};
+
+/* Struct describing whole file mapped to user memory. Intended for collecting
+   memory mappings created by mmap system call. */
+struct mmap_user_block
+{
+  mapid_t id;        /* Map ID of mapping. */
+  struct file *file; /* File that is mapped to memory. */
+
+  struct list chunks;    /* List of `mmap_info`s. */
+  struct list_elem elem; /* Element for mmap_blocks list. */
 };
 
 hash_hash_func mmap_info_hash;
@@ -34,5 +48,7 @@ hash_action_func mmap_info_destruct;
 void mmap_init_anonymous (struct mmap_info *, void *, bool);
 void mmap_init_file_map (struct mmap_info *, void *, struct file *, bool, off_t,
                          uint32_t);
+void mmap_init_user_block (struct mmap_user_block *, mapid_t, struct file *);
+list_less_func mmap_user_block_compare_id;
 
 #endif

@@ -38,6 +38,7 @@ vmm_init (void)
   cur = thread_current ();
 
   list_init (&cur->frames);
+  list_init (&cur->mmap_blocks);
   return hash_init (&cur->mmaps, mmap_info_hash, mmap_info_less, NULL);
 }
 

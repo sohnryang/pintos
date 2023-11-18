@@ -5,6 +5,7 @@
 
 #include <hash.h>
 #include <list.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 /* Hash function for `mmap_info`. */
@@ -61,4 +62,24 @@ mmap_init_file_map (struct mmap_info *info, void *upage, struct file *file,
   info->writable = writable;
   info->offset = offset;
   info->mapped_size = size;
+}
+
+/* Initialize `mmap_user_block` object. */
+void
+mmap_init_user_block (struct mmap_user_block *block, mapid_t id,
+                      struct file *file)
+{
+  block->id = id;
+  block->file = file;
+  list_init (&block->chunks);
+}
+
+bool
+mmap_user_block_compare_id (const struct list_elem *a,
+                            const struct list_elem *b, void *aux UNUSED)
+{
+  const struct mmap_user_block *block_a, *block_b;
+  block_a = list_entry (a, struct mmap_user_block, elem);
+  block_b = list_entry (b, struct mmap_user_block, elem);
+  return block_a->id < block_b->id;
 }
