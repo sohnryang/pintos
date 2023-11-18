@@ -151,7 +151,7 @@ vmm_lookup_frame (void *upage)
 
 /* Deserialize frame from disk. */
 bool
-vmm_deserialize_frame (struct frame *frame, void *kpage)
+vmm_activate_frame (struct frame *frame, void *kpage)
 {
   struct thread *cur;
   struct list_elem *el;
@@ -205,7 +205,7 @@ vmm_handle_not_present (void *fault_addr)
   if (kpage == NULL) // TODO: implement swapping
     return false;
 
-  if (!vmm_deserialize_frame (frame, kpage))
+  if (!vmm_activate_frame (frame, kpage))
     return false;
 
   return true;
