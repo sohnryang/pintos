@@ -15,6 +15,13 @@
 #include "userprog/checked_user_mem.h"
 #include "userprog/process.h"
 
+#ifdef VM
+#include "threads/malloc.h"
+#include "user/syscall.h"
+#include "vm/mmap.h"
+#include "vm/vmm.h"
+#endif
+
 #define WRITE_BUFSIZE 128
 #define READ_BUFSIZE 128
 
@@ -62,12 +69,11 @@ syscall_handler (struct intr_frame *f)
 {
   struct thread *cur = thread_current ();
   int syscall_id;
-  int (*syscall_table[13]) (void *) = {
-    syscall_halt,   syscall_exit,   syscall_exec, syscall_wait,
-    syscall_create, syscall_remove, syscall_open, syscall_filesize,
-    syscall_read,   syscall_write,  syscall_seek, syscall_tell,
-    syscall_close,
-  };
+  int (*syscall_table[15]) (void *)
+      = { syscall_halt,   syscall_exit,   syscall_exec,  syscall_wait,
+          syscall_create, syscall_remove, syscall_open,  syscall_filesize,
+          syscall_read,   syscall_write,  syscall_seek,  syscall_tell,
+          syscall_close,  syscall_mmap,   syscall_munmap };
   void *sp = f->esp;
 
 #ifdef VM
@@ -470,6 +476,34 @@ syscall_close (void *sp)
 static int
 syscall_mmap (void *sp)
 {
+  int fd;
+  void *addr;
+  struct fd_context *fd_ctx;
+  struct file *file_reopened;
+  struct mmap_user_block *block;
+  mapid_t id;
+  bool success;
+
+  pop_arg (int, fd, sp);
+  pop_arg (void *, addr, sp);
+
+  fd_ctx = process_get_fd_ctx (fd);
+  if (fd_ctx == NULL)
+    return -1;
+
+  block = malloc (sizeof (struct mmap_user_block));
+  id = vmm_get_free_mapid ();
+
+  thread_acquire_fs_lock ();
+  file_reopened = file_reopen (fd_ctx->file);
+  mmap_init_user_block (block, id, file_reopened);
+  success = vmm_setup_user_block (block, addr);
+  thread_release_fs_lock ();
+
+  if (!success)
+    return -1;
+
+  return id;
 }
 
 /* System call handler for `MUNMAP`. */
