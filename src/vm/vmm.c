@@ -224,6 +224,7 @@ vmm_grow_stack (void *fault_addr, void *esp)
   return vmm_create_anonymous (pg_round_down (fault_addr), true);
 }
 
+/* Get unused mapping id of current process. */
 mapid_t
 vmm_get_free_mapid (void)
 {
