@@ -3,6 +3,7 @@
 
 #include "filesys/file.h"
 #include "filesys/off_t.h"
+#include "user/syscall.h"
 #include "vm/frame.h"
 #include "vm/mmap.h"
 
@@ -22,5 +23,8 @@ bool vmm_deserialize_frame (struct frame *, void *);
 
 bool vmm_handle_not_present (void *);
 bool vmm_grow_stack (void *, void *);
+
+mapid_t vmm_get_free_mapid (void);
+bool vmm_setup_user_block (struct mmap_user_block *, void *);
 
 #endif

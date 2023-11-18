@@ -6,6 +6,7 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "user/syscall.h"
 #include "userprog/pagedir.h"
 #include "vm/frame.h"
 #include "vm/mmap.h"
@@ -221,4 +222,54 @@ vmm_grow_stack (void *fault_addr, void *esp)
     return false;
 
   return vmm_create_anonymous (pg_round_down (fault_addr), true);
+}
+
+mapid_t
+vmm_get_free_mapid (void)
+{
+  struct thread *cur;
+  mapid_t id;
+  struct list_elem *el;
+  struct mmap_user_block *block;
+
+  cur = thread_current ();
+  id = 0;
+  for (el = list_begin (&cur->mmap_blocks); el != list_end (&cur->mmap_blocks);
+       el = list_next (el))
+    {
+      block = list_entry (el, struct mmap_user_block, elem);
+      if (block->id != id)
+        return id;
+      id++;
+    }
+
+  return id;
+}
+
+/* Populate the chunk list of `block` by mapping file contents to `upage`. */
+bool
+vmm_setup_user_block (struct mmap_user_block *block, void *upage)
+{
+  unsigned length, read_bytes, mmap_size, bytes_left;
+  struct mmap_info *info;
+
+  if (pg_ofs (upage) != 0)
+    return false;
+
+  length = file_length (block->file);
+  for (read_bytes = 0; read_bytes < length; read_bytes += PGSIZE)
+    {
+      bytes_left = length - read_bytes;
+      mmap_size = bytes_left < PGSIZE ? bytes_left : PGSIZE;
+      info = vmm_create_file_map (upage + read_bytes, block->file, true,
+                                  read_bytes, mmap_size);
+      if (info == NULL)
+        {
+          // TODO: add cleanup for mapped pages
+          return false;
+        }
+      list_push_back (&block->chunks, &info->chunk_elem);
+    }
+
+  return true;
 }
