@@ -483,12 +483,16 @@ syscall_mmap (void *sp)
   struct mmap_user_block *block;
   mapid_t id;
   bool success;
+  struct thread *cur;
 
   pop_arg (int, fd, sp);
   pop_arg (void *, addr, sp);
 
+  if (addr == NULL)
+    return -1;
+
   fd_ctx = process_get_fd_ctx (fd);
-  if (fd_ctx == NULL)
+  if (fd_ctx == NULL || fd_ctx->keyboard_in || fd_ctx->screen_out)
     return -1;
 
   block = malloc (sizeof (struct mmap_user_block));
@@ -501,7 +505,14 @@ syscall_mmap (void *sp)
   thread_release_fs_lock ();
 
   if (!success)
-    return -1;
+    {
+      free (block);
+      return -1;
+    }
+
+  cur = thread_current ();
+  list_insert_ordered (&cur->mmap_blocks, &block->elem,
+                       mmap_user_block_compare_id, NULL);
 
   return id;
 }
