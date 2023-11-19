@@ -21,6 +21,7 @@ void vmm_remove_mapping (struct mmap_info *);
 
 struct frame *vmm_lookup_frame (void *);
 bool vmm_activate_frame (struct frame *, void *);
+void vmm_write_frame (struct frame *);
 
 bool vmm_handle_not_present (void *);
 bool vmm_grow_stack (void *, void *);

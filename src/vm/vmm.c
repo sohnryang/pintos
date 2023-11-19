@@ -223,6 +223,37 @@ vmm_handle_not_present (void *fault_addr)
   return true;
 }
 
+/* Write frame content to disk. */
+void
+vmm_write_frame (struct frame *frame)
+{
+  struct thread *cur;
+  struct list_elem *el;
+  struct mmap_info *info;
+  bool written_to_file;
+
+  cur = thread_current ();
+  if (frame->is_stub || frame->is_swapped_out)
+    return;
+
+  written_to_file = false;
+  for (el = list_begin (&frame->mappings); el != list_end (&frame->mappings);
+       el = list_next (el))
+    {
+      info = list_entry (el, struct mmap_info, elem);
+      if (info->file != NULL && pagedir_is_dirty (cur->pagedir, info->upage))
+        {
+          ASSERT (!written_to_file);
+
+          file_seek (info->file, info->offset);
+          file_write (info->file, frame->kpage, info->mapped_size);
+          written_to_file = true;
+        }
+    }
+
+  // TODO: add handling for anonymous-only mappings.
+}
+
 /* Check if the page fault in `fault_addr` is caused by insufficient stack size
    using the given `esp`, and grow the stack if possible. */
 bool
