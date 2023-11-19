@@ -133,6 +133,18 @@ vmm_create_file_map (void *upage, struct file *file, bool writable,
   return info;
 }
 
+/* Remove mapping info. */
+void
+vmm_remove_mapping (struct mmap_info *info)
+{
+  struct thread *cur;
+
+  cur = thread_current ();
+  pagedir_clear_page (cur->pagedir, info->upage);
+  hash_delete (&cur->mmaps, &info->map_elem);
+  mmap_info_destruct (&info->map_elem, NULL);
+}
+
 /* Find page frame corresponding to `upage`. */
 struct frame *
 vmm_lookup_frame (void *upage)
