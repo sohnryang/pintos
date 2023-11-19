@@ -29,5 +29,6 @@ bool vmm_grow_stack (void *, void *);
 mapid_t vmm_get_free_mapid (void);
 struct mmap_user_block *vmm_get_mmap_user_block (mapid_t);
 bool vmm_setup_user_block (struct mmap_user_block *, void *);
+void vmm_cleanup_user_block (struct mmap_user_block *);
 
 #endif

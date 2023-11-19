@@ -337,3 +337,27 @@ vmm_setup_user_block (struct mmap_user_block *block, void *upage)
 
   return true;
 }
+
+/* Clean up `mmap_user_block` object. */
+void
+vmm_cleanup_user_block (struct mmap_user_block *block)
+{
+  struct list_elem *el;
+  struct mmap_info *info;
+
+  for (el = list_begin (&block->chunks); el != list_end (&block->chunks);
+       el = list_next (el))
+    {
+      info = list_entry (el, struct mmap_info, chunk_elem);
+      vmm_write_frame (info->frame);
+    }
+
+  while (!list_empty (&block->chunks))
+    {
+      el = list_pop_front (&block->chunks);
+      info = list_entry (el, struct mmap_info, chunk_elem);
+      vmm_remove_mapping (info);
+    }
+  list_remove (&block->elem);
+  free (block);
+}
