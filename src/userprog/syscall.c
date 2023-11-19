@@ -521,4 +521,18 @@ syscall_mmap (void *sp)
 static int
 syscall_munmap (void *sp)
 {
+  mapid_t id;
+  struct mmap_user_block *block;
+
+  pop_arg (mapid_t, id, sp);
+
+  block = vmm_get_mmap_user_block (id);
+  if (block == NULL)
+    process_trigger_exit (-1);
+
+  thread_acquire_fs_lock ();
+  vmm_cleanup_user_block (block);
+  thread_release_fs_lock ();
+
+  return 0;
 }
