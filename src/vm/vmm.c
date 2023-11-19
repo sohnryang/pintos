@@ -290,6 +290,26 @@ vmm_get_free_mapid (void)
   return id;
 }
 
+/* Get `mmap_user_block` object of current process by map id. */
+struct mmap_user_block *
+vmm_get_mmap_user_block (mapid_t id)
+{
+  struct thread *cur;
+  struct list_elem *el;
+  struct mmap_user_block *block;
+
+  cur = thread_current ();
+  for (el = list_begin (&cur->mmap_blocks); el != list_end (&cur->mmap_blocks);
+       el = list_next (el))
+    {
+      block = list_entry (el, struct mmap_user_block, elem);
+      if (block->id == id)
+        return block;
+    }
+
+  return NULL;
+}
+
 /* Populate the chunk list of `block` by mapping file contents to `upage`. */
 bool
 vmm_setup_user_block (struct mmap_user_block *block, void *upage)
