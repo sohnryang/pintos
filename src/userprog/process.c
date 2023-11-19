@@ -22,6 +22,7 @@
 #include "threads/vaddr.h"
 
 #ifdef VM
+#include "vm/mmap.h"
 #include "vm/vmm.h"
 #endif
 
@@ -304,6 +305,15 @@ process_exit (void)
   thread_release_fs_lock ();
 
 #ifdef VM
+  thread_acquire_fs_lock ();
+  while (!list_empty (&cur->mmap_blocks))
+    {
+      struct mmap_user_block *block;
+      el = list_pop_front (&cur->mmap_blocks);
+      block = list_entry (el, struct mmap_user_block, elem);
+      vmm_cleanup_user_block (block);
+    }
+  thread_release_fs_lock ();
   vmm_destroy ();
 #endif
 
