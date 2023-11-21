@@ -48,19 +48,29 @@ void
 vmm_destroy (void)
 {
   struct thread *cur;
-  struct list_elem *el;
+  struct list_elem *el, *mapel;
   struct frame *frame;
+  struct mmap_info *info;
 
   cur = thread_current ();
-
-  hash_destroy (&cur->mmaps, mmap_info_destruct);
-
   while (!list_empty (&cur->frames))
     {
       el = list_pop_front (&cur->frames);
       frame = list_entry (el, struct frame, elem);
+      if (frame->kpage != NULL)
+        {
+          palloc_free_page (frame->kpage);
+          for (mapel = list_begin (&frame->mappings);
+               mapel != list_end (&frame->mappings); mapel = list_next (mapel))
+            {
+              info = list_entry (mapel, struct mmap_info, elem);
+              pagedir_clear_page (cur->pagedir, info->upage);
+            }
+        }
       free (frame);
     }
+
+  hash_destroy (&cur->mmaps, mmap_info_destruct);
 }
 
 /* Create a new frame and map `info` to it. */
