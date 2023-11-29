@@ -8,7 +8,6 @@
 #include "userprog/process.h"
 
 #ifdef VM
-#include "userprog/syscall.h"
 #include "vm/vmm.h"
 #endif
 
