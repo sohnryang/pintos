@@ -262,6 +262,9 @@ vmm_deactivate_frame (struct frame *frame)
     }
 
   // TODO: add handling for anonymous-only mappings.
+
+  palloc_free_page (frame->kpage);
+  frame->kpage = NULL;
 }
 
 /* Check if the page fault in `fault_addr` is caused by insufficient stack size
