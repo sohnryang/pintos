@@ -235,7 +235,7 @@ vmm_handle_not_present (void *fault_addr)
 
 /* Write frame content to disk. */
 void
-vmm_write_frame (struct frame *frame)
+vmm_deactivate_frame (struct frame *frame)
 {
   struct thread *cur;
   struct list_elem *el;
@@ -359,7 +359,7 @@ vmm_cleanup_user_block (struct mmap_user_block *block)
        el = list_next (el))
     {
       info = list_entry (el, struct mmap_info, chunk_elem);
-      vmm_write_frame (info->frame);
+      vmm_deactivate_frame (info->frame);
     }
 
   while (!list_empty (&block->chunks))
