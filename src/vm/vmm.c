@@ -179,33 +179,50 @@ vmm_activate_frame (struct frame *frame, void *kpage)
   size_t zero_bytes;
 
   cur = thread_current ();
-  read_from_file = false;
-  for (el = list_begin (&frame->mappings); el != list_end (&frame->mappings);
-       el = list_next (el))
-    {
-      info = list_entry (el, struct mmap_info, elem);
-      if (!pagedir_set_page (cur->pagedir, info->upage, kpage, info->writable))
-        return false;
-      if (info->file != NULL)
-        {
-          ASSERT (!read_from_file);
-
-          file_seek (info->file, info->offset);
-          file_read (info->file, kpage, info->mapped_size);
-          zero_bytes = PGSIZE - info->mapped_size;
-          memset (kpage + info->mapped_size, 0, zero_bytes);
-          read_from_file = true;
-        }
-    }
-
-  if (frame->is_stub && !read_from_file)
-    memset (kpage, 0, PGSIZE);
-
-  // TODO: add handling for swapped-out pages
 
   frame->kpage = kpage;
+  if (frame->is_swapped_out)
+    {
+      swap_read_frame (frame);
+      for (el = list_begin (&frame->mappings);
+           el != list_end (&frame->mappings); el = list_next (el))
+        {
+          info = list_entry (el, struct mmap_info, elem);
+          if (!pagedir_set_page (cur->pagedir, info->upage, kpage,
+                                 info->writable))
+            return false;
+        }
+    }
+  else
+    {
+      read_from_file = false;
+      for (el = list_begin (&frame->mappings);
+           el != list_end (&frame->mappings); el = list_next (el))
+        {
+          info = list_entry (el, struct mmap_info, elem);
+          if (!pagedir_set_page (cur->pagedir, info->upage, kpage,
+                                 info->writable))
+            return false;
+          if (info->file != NULL)
+            {
+              ASSERT (!read_from_file);
+
+              file_seek (info->file, info->offset);
+              file_read (info->file, kpage, info->mapped_size);
+              zero_bytes = PGSIZE - info->mapped_size;
+              memset (kpage + info->mapped_size, 0, zero_bytes);
+              read_from_file = true;
+            }
+        }
+
+      if (frame->is_stub && !read_from_file)
+        memset (kpage, 0, PGSIZE);
+    }
+
   frame->is_stub = false;
   frame->is_swapped_out = false;
+  swap_register_frame (frame);
+
   return true;
 }
 
@@ -214,7 +231,7 @@ bool
 vmm_handle_not_present (void *fault_addr)
 {
   void *kpage, *upage;
-  struct frame *frame;
+  struct frame *frame, *victim;
 
   upage = pg_round_down (fault_addr);
   frame = vmm_lookup_frame (upage);
@@ -222,8 +239,12 @@ vmm_handle_not_present (void *fault_addr)
     return false;
 
   kpage = palloc_get_page (PAL_USER);
-  if (kpage == NULL) // TODO: implement swapping
-    return false;
+  if (kpage == NULL)
+    {
+      victim = swap_find_victim ();
+      vmm_deactivate_frame (victim);
+      kpage = palloc_get_page (PAL_ZERO);
+    }
 
   if (!vmm_activate_frame (frame, kpage))
     return false;
@@ -238,18 +259,24 @@ vmm_deactivate_frame (struct frame *frame)
   struct thread *cur;
   struct list_elem *el;
   struct mmap_info *info;
-  bool written_to_file;
+  bool written_to_file, readonly, exe_mapping;
 
   cur = thread_current ();
-  if (frame->is_stub || frame->is_swapped_out)
+  if (frame->is_stub || frame->is_swapped_out || frame->kpage == NULL)
     return;
 
   written_to_file = false;
+  readonly = true;
+  exe_mapping = false;
   for (el = list_begin (&frame->mappings); el != list_end (&frame->mappings);
        el = list_next (el))
     {
       info = list_entry (el, struct mmap_info, elem);
-      if (info->file != NULL && pagedir_is_dirty (cur->pagedir, info->upage))
+      readonly &= !info->writable;
+      exe_mapping |= info->exe_mapping;
+      pagedir_clear_page (cur->pagedir, info->upage);
+      if (info->file != NULL && !info->exe_mapping
+          && pagedir_is_dirty (cur->pagedir, info->upage))
         {
           ASSERT (!written_to_file);
 
@@ -259,11 +286,17 @@ vmm_deactivate_frame (struct frame *frame)
         }
     }
 
-  // TODO: add handling for anonymous-only mappings.
+  if (!written_to_file && !(readonly && exe_mapping))
+    {
+      swap_write_frame (frame);
+      frame->is_swapped_out = true;
+    }
+  else
+    frame->is_swapped_out = false;
 
   palloc_free_page (frame->kpage);
-  frame->is_swapped_out = true;
   frame->kpage = NULL;
+  swap_unregister_frame (frame);
 }
 
 /* Check if the page fault in `fault_addr` is caused by insufficient stack size
