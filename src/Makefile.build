@@ -67,6 +67,7 @@ userprog_SRC += userprog/checked_user_mem.c	# Checked user memory access.
 vm_SRC  = vm/frame.c			# Page frame management.
 vm_SRC += vm/mmap.c				# Memory mapping handling.
 vm_SRC += vm/vmm.c				# Virtual memory manager.
+vm_SRC += vm/swap.c				# Swap manager.
 
 # Filesystem code.
 filesys_SRC  = filesys/filesys.c	# Filesystem core.
