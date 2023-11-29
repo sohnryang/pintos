@@ -730,7 +730,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage, uint32_t read_bytes,
           return false;
         }
 #else
-      if (!vmm_create_file_map (upage, file, writable, ofs + pos,
+      if (!vmm_create_file_map (upage, file, writable, true, ofs + pos,
                                 page_read_bytes))
         return false;
       pos += page_read_bytes;

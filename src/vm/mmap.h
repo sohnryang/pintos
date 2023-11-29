@@ -19,6 +19,7 @@ struct mmap_info
                         anonymous. */
 
   bool writable;        /* Whether the mapping is writable. */
+  bool exe_mapping;     /* Whether the mapping is for executable. */
   off_t offset;         /* Offset of mapped file. */
   uint32_t mapped_size; /* Size of mapped data. */
 
@@ -46,8 +47,8 @@ hash_less_func mmap_info_less;
 hash_action_func mmap_info_destruct;
 
 void mmap_init_anonymous (struct mmap_info *, void *, bool);
-void mmap_init_file_map (struct mmap_info *, void *, struct file *, bool, off_t,
-                         uint32_t);
+void mmap_init_file_map (struct mmap_info *, void *, struct file *, bool, bool,
+                         off_t, uint32_t);
 void mmap_init_user_block (struct mmap_user_block *, mapid_t, struct file *);
 list_less_func mmap_user_block_compare_id;
 

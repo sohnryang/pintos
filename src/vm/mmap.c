@@ -48,6 +48,7 @@ mmap_init_anonymous (struct mmap_info *info, void *upage, bool writable)
   info->upage = upage;
   info->file = NULL;
   info->writable = writable;
+  info->exe_mapping = false;
   info->offset = 0;
   info->mapped_size = 0;
 }
@@ -55,11 +56,13 @@ mmap_init_anonymous (struct mmap_info *info, void *upage, bool writable)
 /* Initialize `mmap_info` object for file-backed mapping. */
 void
 mmap_init_file_map (struct mmap_info *info, void *upage, struct file *file,
-                    bool writable, off_t offset, uint32_t size)
+                    bool writable, bool exe_mapping, off_t offset,
+                    uint32_t size)
 {
   info->upage = upage;
   info->file = file;
   info->writable = writable;
+  info->exe_mapping = exe_mapping;
   info->offset = offset;
   info->mapped_size = size;
 }

@@ -124,7 +124,7 @@ vmm_create_anonymous (void *upage, bool writable)
 /* Create a file mapping for `file` to `upage`. */
 struct mmap_info *
 vmm_create_file_map (void *upage, struct file *file, bool writable,
-                     off_t offset, uint32_t size)
+                     bool exe_mapping, off_t offset, uint32_t size)
 {
   struct mmap_info *info;
 
@@ -133,7 +133,7 @@ vmm_create_file_map (void *upage, struct file *file, bool writable,
   info = malloc (sizeof (struct mmap_info));
   if (info == NULL)
     return NULL;
-  mmap_init_file_map (info, upage, file, writable, offset, size);
+  mmap_init_file_map (info, upage, file, writable, exe_mapping, offset, size);
 
   if (!vmm_map_to_new_frame (info))
     {
@@ -340,7 +340,7 @@ vmm_setup_user_block (struct mmap_user_block *block, void *upage)
     {
       bytes_left = length - read_bytes;
       mmap_size = bytes_left < PGSIZE ? bytes_left : PGSIZE;
-      info = vmm_create_file_map (upage + read_bytes, block->file, true,
+      info = vmm_create_file_map (upage + read_bytes, block->file, true, false,
                                   read_bytes, mmap_size);
       if (info == NULL)
         {

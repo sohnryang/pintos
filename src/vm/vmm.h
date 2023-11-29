@@ -15,7 +15,7 @@ void vmm_destroy (void);
 
 bool vmm_map_to_new_frame (struct mmap_info *);
 struct mmap_info *vmm_create_anonymous (void *, bool);
-struct mmap_info *vmm_create_file_map (void *, struct file *, bool, off_t,
+struct mmap_info *vmm_create_file_map (void *, struct file *, bool, bool, off_t,
                                        uint32_t);
 void vmm_remove_mapping (struct mmap_info *);
 
