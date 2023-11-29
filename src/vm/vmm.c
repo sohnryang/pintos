@@ -208,6 +208,7 @@ vmm_activate_frame (struct frame *frame, void *kpage)
 
   frame->kpage = kpage;
   frame->is_stub = false;
+  frame->is_swapped_out = false;
   return true;
 }
 
@@ -264,6 +265,7 @@ vmm_deactivate_frame (struct frame *frame)
   // TODO: add handling for anonymous-only mappings.
 
   palloc_free_page (frame->kpage);
+  frame->is_swapped_out = true;
   frame->kpage = NULL;
 }
 
