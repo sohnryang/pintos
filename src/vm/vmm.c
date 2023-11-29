@@ -10,6 +10,7 @@
 #include "userprog/pagedir.h"
 #include "vm/frame.h"
 #include "vm/mmap.h"
+#include "vm/swap.h"
 
 #include <hash.h>
 #include <list.h>
@@ -48,9 +49,8 @@ void
 vmm_destroy (void)
 {
   struct thread *cur;
-  struct list_elem *el, *mapel;
+  struct list_elem *el;
   struct frame *frame;
-  struct mmap_info *info;
 
   cur = thread_current ();
   while (!list_empty (&cur->frames))
@@ -60,13 +60,10 @@ vmm_destroy (void)
       if (frame->kpage != NULL)
         {
           palloc_free_page (frame->kpage);
-          for (mapel = list_begin (&frame->mappings);
-               mapel != list_end (&frame->mappings); mapel = list_next (mapel))
-            {
-              info = list_entry (mapel, struct mmap_info, elem);
-              pagedir_clear_page (cur->pagedir, info->upage);
-            }
+          swap_unregister_frame (frame);
         }
+      else if (frame->is_swapped_out)
+        swap_free_frame (frame);
       free (frame);
     }
 

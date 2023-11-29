@@ -2,6 +2,8 @@
 
 #include "debug.h"
 #include "threads/malloc.h"
+#include "threads/thread.h"
+#include "userprog/pagedir.h"
 
 #include <hash.h>
 #include <list.h>
@@ -35,8 +37,12 @@ void
 mmap_info_destruct (struct hash_elem *el, void *aux UNUSED)
 {
   struct mmap_info *info;
+  struct thread *cur;
 
+  cur = thread_current ();
   info = hash_entry (el, struct mmap_info, map_elem);
+
+  pagedir_clear_page (cur->pagedir, info->upage);
   list_remove (&info->elem);
   free (info);
 }
